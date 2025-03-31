@@ -1,0 +1,8 @@
+path:
+  audioset: audioset/
+
+convert: 
+  image_size: 224
+  fps: 10
+
+sample_rate: 16000

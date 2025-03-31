@@ -1,0 +1,135 @@
+_base_: ${base_config_path}/train_ddp.yaml
+
+sample_rate: 16000
+n_fft: 2048
+hop_length: 256
+n_mels: 128
+
+n_class: 10
+
+warmup_step: 40000
+
+label_names:
+  _target_: m3l.utils.label_loader
+  filename: ${working_directory}/../../../metadata/label_names.json
+
+trainer:
+  max_epochs: 200
+  gradient_clip_val: 5.0
+  sync_batchnorm: True
+  
+  benchmark: True
+  use_distributed_sampler: False
+
+  callbacks:
+    - _target_: lightning.pytorch.callbacks.ModelCheckpoint
+      save_top_k: 2
+      save_last: True
+      monitor: "validation/event-f1"
+      mode: "max"
+      filename: "{epoch:04d}"
+
+    - _target_: lightning.pytorch.callbacks.RichProgressBar
+      refresh_rate: 5
+    - _target_: lightning.pytorch.callbacks.RichModelSummary
+      max_depth: 3
+
+    - _target_: m3l.audio.sed.callbacks.visualizer.VisualizerCallback
+      time_stretch: 4
+      label_names: ${label_names}
+    
+    - _target_: m3l.common.callbacks.exponential_warmup_annealer.ExponentialWarmupAnnealerCallback
+      name: beta
+      max_value: 2.0
+      duration: ${warmup_step}
+
+
+hdf5_path: ${working_directory}/../../../hdf5/
+datamodule:
+  _target_: m3l.common.datamodules.MultiDataModule
+  train_dataset_fn_dict:
+    strong:
+      _partial_: true
+      _target_: m3l.audio.common.datasets.FrameLabeledHDF5Dataset
+      dataset_path: ${hdf5_path}/strong.${sample_rate}hz_64ms.train.hdf5
+    weak:
+      _partial_: true
+      _target_: m3l.audio.common.datasets.ClipLabeledHDF5Dataset
+      dataset_path: ${hdf5_path}/weak.${sample_rate}hz.train.hdf5
+    unsup:
+      _partial_: true
+      _target_: m3l.audio.common.datasets.UnlabeledHDF5Dataset
+      dataset_path: ${hdf5_path}/unsupervised.${sample_rate}hz.train.hdf5
+  train_batch_size_list: [2, 2, 4]
+
+  val_dataset_fn_dict:
+    strong:
+      _partial_: true
+      _target_: m3l.audio.common.datasets.FrameLabeledHDF5Dataset
+      dataset_path: ${hdf5_path}/strong.${sample_rate}hz_64ms.validation.hdf5
+  val_batch_size_list: [4]
+  
+
+task:
+  _target_: m3l.audio.sed.tasks.weak_ema_sed_task.WeakEMASEDTask
+  n_class: ${n_class}
+  label_names: ${label_names}
+  time_resolution: 0.064
+
+  val_groundtruth: ${working_directory}/../../../annotation/validation.tsv
+  val_duration: 10
+  
+  preprocessor:
+    _target_: m3l.audio.common.preprocessors.Preprocessor
+    sample_rate: ${sample_rate}
+    n_fft: ${n_fft}
+    hop_length: ${hop_length}
+    n_mels: ${n_mels}
+    wav_transforms:
+      - _target_: m3l.audio.common.preprocessors.scale.Scale
+        normalize: "none"
+    mel_transforms:
+      - _target_: m3l.audio.common.preprocessors.mixup.Mixup
+    logmel_transforms:
+      - _target_: m3l.audio.common.preprocessors.normalize.Normalize
+        num_channels: ${n_mels}
+      - _target_: m3l.audio.common.preprocessors.clamp.Clamp
+      - _target_: m3l.audio.common.preprocessors.spec_augment.SpecAugment
+        n_time_masks: 2
+        time_mask_param: 50
+        n_freq_masks: 2
+        freq_mask_param: 10
+      - _target_: m3l.audio.common.preprocessors.gaussian_noise.GaussianNoise
+
+  model:
+    _target_: m3l.audio.sed.models.strong_weak_model.StrongWeakSEDModel
+    encoder:
+      _target_: m3l.audio.common.encoders.dcase_crnn.CRNN
+
+    strong_head:
+      _target_: m3l.audio.sed.heads.linear_head.LinearHead
+      n_channels: 256
+      n_class: ${n_class}
+    
+    weak_head:
+      _target_: m3l.audio.sed.heads.attention_head.AttentionHead
+      n_channels: 256
+      n_class: ${n_class}
+
+  postprocessor:
+    _target_: m3l.audio.common.postprocessors.median_filter.MedianFilter
+    filter_size: 7
+
+  optimizer_config:
+    _target_: aiaccel.torch.lightning.OptimizerConfig
+    optimizer_generator:
+      _partial_: True
+      _target_: torch.optim.Adam
+      lr: 1.e-3
+      amsgrad: True
+      weight_decay: 0
+    scheduler_generator:
+      _partial_: True
+      _target_: m3l.common.lr_schedulers.exponential_warmup.ExponentialWarmupScheduler
+      max_lr: 1.e-3
+      duration: ${warmup_step}
