@@ -9,6 +9,8 @@ n_class: 10
 
 warmup_step: 40000
 
+checkpoint_filename: "best"
+
 label_names:
   _target_: m3l.utils.label_loader
   filename: ${working_directory}/../../../metadata/label_names.json
@@ -23,11 +25,11 @@ trainer:
 
   callbacks:
     - _target_: lightning.pytorch.callbacks.ModelCheckpoint
-      save_top_k: 2
+      save_top_k: 1
       save_last: True
       monitor: "validation/event-f1"
       mode: "max"
-      filename: "{epoch:04d}"
+      filename: ${checkpoint_filename}
 
     - _target_: lightning.pytorch.callbacks.RichProgressBar
       refresh_rate: 5
@@ -123,8 +125,8 @@ task:
 
   freezed_model:
     _target_: m3l.audio.common.encoders.beats.BEATsModel
-    beats_path: ${working_directory}/../../../../../local/src/unilm/beats/
-    checkpoint_path: ${working_directory}/../../../../../local/src/unilm/beats/BEATs_iter3_plus_AS2M.pt
+    beats_path: ${working_directory}/../../../../../3rd/unilm/beats/
+    checkpoint_path: ${working_directory}/../../../../../3rd/unilm/beats/BEATs_iter3_plus_AS2M.pt
 
   optimizer_config:
     _target_: aiaccel.torch.lightning.OptimizerConfig

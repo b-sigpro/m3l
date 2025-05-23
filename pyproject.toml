@@ -8,7 +8,15 @@ authors = [{name = "Yoshiaki Bando", email = "y.bando@aist.go.jp"}]
 readme = "README.md"
 license = {file = "LICENSE"}
 description = "Multimodal Machine Listening Toolkit"
-version = "2025.03"
+version = "2025.05"
+
+dependencies = [
+    "aiaccel>=2025.04",
+    "sed_scores_eval",
+    "kornia",
+    "resampy"
+]
+
 
 [project.urls]
 Home = "https://ybando.jp"

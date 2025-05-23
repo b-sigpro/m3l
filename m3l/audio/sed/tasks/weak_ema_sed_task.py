@@ -1,6 +1,3 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 import torch
 from torch import nn
 from torch.nn import functional as fn
@@ -30,6 +27,7 @@ class WeakEMASEDTask(SEDTask):
         threshold: float = 0.5,
         alpha: float = 1.0,
         beta: float = 1.0,
+        calc_event_metrics: bool = True,
     ):
         super().__init__(
             preprocessor,
@@ -44,6 +42,7 @@ class WeakEMASEDTask(SEDTask):
             freezed_model,
             threshold,
             alpha,
+            calc_event_metrics,
         )
 
         self.ema_model = AveragedModel(self.model, multi_avg_fn=get_ema_multi_avg_fn(0.999), use_buffers=True)

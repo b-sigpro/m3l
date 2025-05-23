@@ -82,7 +82,7 @@ def main():
     args_str = f"{args.split}.{image_size}image_size.{fps}fps"
 
     # write HDF5 file
-    hdf_filename = dataset_path / "hdf5" / f"unsupervised.{args_str}.hdf5"
+    hdf_filename = dataset_path / "hdf5" / f"audiovisual_unsupervised.{args_str}.hdf5"
     hdf_filename.unlink(missing_ok=True)
 
     writer = AudioVisualHDF5Writer(args.split, dataset_path, fps)

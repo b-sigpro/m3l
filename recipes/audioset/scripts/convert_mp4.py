@@ -27,9 +27,8 @@ def main(args):
 
     match args.split:
         case "train":
-            src_fname_list = (
-                list((dataset_path / "videos" / "unbalanced_train_segments").glob("*.mp4")) + 
-                list((dataset_path / "videos" / "balanced_train_segments").glob("*.mp4"))
+            src_fname_list = list((dataset_path / "videos" / "unbalanced_train_segments").glob("*.mp4")) + list(
+                (dataset_path / "videos" / "balanced_train_segments").glob("*.mp4")
             )
         case "eval":
             src_fname_list = list((dataset_path / "videos" / "eval_segments").glob("*.mp4"))
@@ -52,7 +51,11 @@ def main(args):
                 "-i",
                 src_fname,
                 "-vf",
-                rf"scale=w=iw*min({image_size}/iw\,{image_size}/ih):h=ih*min({image_size}/iw\,{image_size}/ih), pad={image_size}:{image_size}:({image_size}-iw*min({image_size}/iw\,{image_size}/ih))/2:({image_size}-ih*min({image_size}/iw\,{image_size}/ih))/2",
+                (
+                    rf"scale=w=iw*min({image_size}/iw\,{image_size}/ih):h=ih*min({image_size}/iw\,{image_size}/ih), ",
+                    rf"pad={image_size}:{image_size}:({image_size}-iw*min({image_size}/iw\,",
+                    rf"{image_size}/ih))/2:({image_size}-ih*min({image_size}/iw\,{image_size}/ih))/2",
+                ),
                 "-r",
                 f"{fps}",
                 "-an",

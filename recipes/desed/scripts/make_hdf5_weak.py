@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
-from aiaccel.utils import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
 
 import librosa
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from omegaconf import DictConfig
 
-from aiaccel.utils import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
 
 
 def prepare_annotations(annotation_path: Path, config: DictConfig):

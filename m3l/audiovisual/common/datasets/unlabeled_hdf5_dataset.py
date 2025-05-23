@@ -1,12 +1,8 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 # import time
 import torch
-import torch.nn as nn
 from torch.utils.data import Dataset
 
 import torchvision
@@ -32,7 +28,6 @@ class AVDataset(Dataset):
         self.ignore_error = ignore_error
         self.train = train
 
-
     def __len__(self):
         return len(self.cached_dataset)
 
@@ -41,8 +36,6 @@ class AVDataset(Dataset):
 
         wav = sample["audio"]
         wav = torch.as_tensor(wav, dtype=torch.bfloat16)
-
-        box_frame = int(self.fps * 1 / 2)
 
         # load video data (a temp file on tmpfs)
         with NamedTemporaryFile(dir="/dev/shm", suffix=".mp4") as f:
@@ -55,6 +48,5 @@ class AVDataset(Dataset):
                 output_format="TCHW",
             )
         frames = frames[0].to(torch.bfloat16) / 255
-        _, image_h, image_w = frames.shape
 
         return wav, frames

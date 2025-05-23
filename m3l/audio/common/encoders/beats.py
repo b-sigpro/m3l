@@ -1,6 +1,3 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 from pathlib import Path
 import sys
 
@@ -17,8 +14,8 @@ class BEATsModel(nn.Module):
 
     def __init__(
         self,
-        beats_path: str | Path = "./local/src/unilm/beats/",
-        checkpoint_path: str | Path = "./local/src/unilm/beats/BEATs_iter3_plus_AS2M.pt",
+        beats_path: str | Path = "./3rd/unilm/beats/",
+        checkpoint_path: str | Path = "./3rd/unilm/beats/BEATs_iter3_plus_AS2M.pt",
     ):
         """
         Initializes the BEATs model with the specified configuration and checkpoint.

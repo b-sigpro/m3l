@@ -1,6 +1,3 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 import numpy as np
 
 import torch
@@ -14,13 +11,16 @@ class TimeWarp(nn.Module):
         if self.training:
             _, F, T = x.shape
 
-            t_src = np.random.randint(int(0.4 * T), int(0.6 * T))
-            t_dst = t_src + np.random.randint(int(-0.1 * T), int(+0.1 * T))
+            t_src_unit = np.random.uniform(0.4, 0.6)
+            t_dst_unit = t_src_unit + np.random.uniform(-0.1, +0.1)
 
+            t_src, t_dst = int(t_src_unit * T), int(t_dst_unit * T)
             x = torch.cat([resize(x[..., :t_src], [F, t_dst]), resize(x[..., t_src:], [F, T - t_dst])], dim=-1)
 
             if y is not None and y.dim() == 3:
-                _, L, _ = y.shape
+                _, L, Ty = y.shape
+
+                t_src, t_dst = int(t_src_unit * Ty), int(t_dst_unit * Ty)
                 y = torch.cat([resize(y[..., :t_src], [L, t_dst]), resize(y[..., t_src:], [L, T - t_dst])], dim=-1)
 
         return x, y

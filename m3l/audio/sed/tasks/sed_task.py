@@ -1,6 +1,3 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 from dataclasses import dataclass
 
 import numpy as np
@@ -41,6 +38,7 @@ class SEDTask(OptimizerLightningModule):
         freezed_model: nn.Module | None = None,
         threshold: float = 0.5,
         alpha: float = 1.0,
+        calc_event_metrics: bool = True,
     ):
         super().__init__(optimizer_config)
 
@@ -52,20 +50,23 @@ class SEDTask(OptimizerLightningModule):
         self.label_names = label_names
         self.time_resolution = time_resolution
 
-        self.val_duration = val_duration
-        self.val_groundtruth = sed_scores_eval.io.read_ground_truth_events(val_groundtruth)
+        self.calc_event_metrics = calc_event_metrics
+
+        if calc_event_metrics:
+            self.val_duration = val_duration
+            self.val_groundtruth = sed_scores_eval.io.read_ground_truth_events(val_groundtruth)
 
         self.f1_score = MultilabelF1Score(n_class, average="none")
         self.threshold = threshold
 
         self.alpha = alpha
 
-    def foward(self, wav: torch.Tensor):
+    def forward(self, wav: torch.Tensor) -> torch.Tensor:
         feats, _ = self.preprocessor(wav)
 
         if self.freezed_model is not None:
             feats["emb"] = self.freezed_model(feats)
-        y_pred, _ = self.model(feats)
+        y_pred = self.model(feats)
 
         y_pred = self.postprocessor(y_pred)
 
@@ -166,8 +167,11 @@ class SEDTask(OptimizerLightningModule):
     def on_validation_epoch_end(self) -> None:
         # segment f1
         f1 = self.f1_score.compute()
-        self.log("validation/seg-f1", f1.mean(), prog_bar=True, on_epoch=True, sync_dist=True)
+        self.log("validation/segment-f1", f1.mean(), prog_bar=True, on_epoch=True, sync_dist=True)
         self.f1_score.reset()
+
+        if not self.calc_event_metrics:
+            return
 
         # psds & event-F1
         sub_scores = {}

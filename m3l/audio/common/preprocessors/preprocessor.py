@@ -1,6 +1,3 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 from functools import partial
 
 import torch
@@ -36,7 +33,7 @@ class Preprocessor(nn.Module):
         self.to_db = AmplitudeToDB(stype="amplitude")
         self.to_db.amin = 1e-5
 
-        self.wav_transforms = nn.Sequential(*wav_transforms if wav_transforms is not None else [])
+        self.wav_transforms = TupleSequential(*wav_transforms if wav_transforms is not None else [])
         self.mel_transforms = TupleSequential(*mel_transforms if mel_transforms is not None else [])
         self.logmel_transforms = TupleSequential(*logmel_transforms if logmel_transforms is not None else [])
 
@@ -46,7 +43,7 @@ class Preprocessor(nn.Module):
     ) -> tuple[dict[str, torch.Tensor], torch.Tensor | None]:
         B, _ = wav.shape
 
-        wav = self.wav_transforms(wav)
+        wav, y = self.wav_transforms(wav, y)
 
         x, y = self.mel_transforms(self.mel(wav), y)
 

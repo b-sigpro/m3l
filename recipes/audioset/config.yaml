@@ -1,5 +1,4 @@
-path:
-  audioset: audioset/
+_base_: ../globals.yaml
 
 convert: 
   image_size: 224

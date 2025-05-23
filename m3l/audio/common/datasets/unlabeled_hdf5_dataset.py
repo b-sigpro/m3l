@@ -1,15 +1,21 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
+from pathlib import Path
 
 import torch
+from torch.utils.data import Dataset
 
-from aiaccel.torch.datasets import HDF5Dataset
+from aiaccel.torch.datasets import CachedDataset, HDF5Dataset
 
 
-class UnlabeledHDF5Dataset(HDF5Dataset):
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, str]:  # type: ignore
+class UnlabeledHDF5Dataset(Dataset):
+    def __init__(self, dataset_path: Path | str, grp_list: Path | str | list[str] | None = None) -> None:
+        self._dataset = CachedDataset(HDF5Dataset(dataset_path, grp_list))
+
+    def __len__(self):
+        return len(self._dataset)
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor, str]:  # type: ignore
         item = super().__getitem__(index)
 
         wav = item["wav"]
 
-        return wav, self.grp_list[index]
+        return wav, self._dataset.dataset.grp_list[index]

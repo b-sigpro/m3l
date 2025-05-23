@@ -3,14 +3,19 @@
 pyrightconfig.json
 
 local/
+src/
+3rd/
 singularity/
+bak*
+*token.txt
 
-recipes/*/audio/
-recipes/*/annotation/
-recipes/*/metadata/
-recipes/*/models/
-recipes/*/jobs/
-tmp*/
+recipes/**
+!recipes/**/scripts/
+!recipes/**/scripts/*.py
+!recipes/**/Makefile
+!recipes/**/*.mk
+!recipes/**/*.md
+!recipes/**/config.yaml
 hdf5/
 
 *.wav

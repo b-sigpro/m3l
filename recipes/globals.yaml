@@ -1,0 +1,7 @@
+path:
+  desed: /corpus/desed/data/dcase/dataset/
+  dcase2021_public_eval: /corpus/dcase2021_public_eval/
+
+  urban_sed: /corpus/URBAN-SED_v2.0.0/
+
+  audioset: /corpus/audioset/

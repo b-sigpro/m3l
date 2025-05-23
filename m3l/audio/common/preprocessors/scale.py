@@ -1,6 +1,3 @@
-# MIT License
-# Copyright (c) 2025 National Institute of Advanced Industrial Science and Technology (AIST), Japan
-
 from typing import Literal
 
 import numpy as np
@@ -16,12 +13,12 @@ class Scale(nn.Module):
 
         self.normalize = normalize
 
-    def forward(self, wav: torch.Tensor):
+    def forward(self, wav: torch.Tensor, y: torch.Tensor | None = None):
         if self.normalize:
             if self.normalize == "std":
                 wav = wav / wav.square().mean(dim=1, keepdim=True).sqrt().clip(1e-8)
             elif self.normalize == "max":
-                wav = wav / wav.abs().amax(axis=1, keepdim=True).clip(1e-8)
+                wav = wav / wav.abs().amax(dim=1, keepdim=True).clip(1e-8)
             elif self.normalize == "none" or self.normalize is False:
                 pass
             else:
@@ -33,4 +30,4 @@ class Scale(nn.Module):
             scale = truncnorm(-np.log(3), np.log(3), 0, 1).rvs((B, 1))
             wav = wav * torch.tensor(scale, dtype=torch.float32, device=wav.device).exp()
 
-        return wav
+        return wav, y

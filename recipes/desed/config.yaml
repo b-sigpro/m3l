@@ -1,4 +1,1 @@
-path:
-  desed: desed/data/dcase/dataset/
-  dcase2021_public_eval: dcase2021_public_eval/
-
+_base_: ../globals.yaml

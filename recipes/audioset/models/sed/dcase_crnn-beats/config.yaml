@@ -5,7 +5,7 @@ n_fft: 2048
 hop_length: 256
 n_mels: 128
 
-n_class: 10
+n_class: 456
 
 warmup_step: 40000
 
@@ -13,7 +13,7 @@ checkpoint_filename: "best"
 
 label_names:
   _target_: m3l.utils.label_loader
-  filename: ${working_directory}/../../../metadata/label_names.json
+  filename: ${working_directory}/../../../metadata/strong_label_names.json
 
 trainer:
   max_epochs: 200
@@ -27,9 +27,9 @@ trainer:
     - _target_: lightning.pytorch.callbacks.ModelCheckpoint
       save_top_k: 1
       save_last: True
-      monitor: "validation/event-f1"
+      monitor: "validation/segment-f1"
       mode: "max"
-      filename: "best"
+      filename: ${checkpoint_filename}
 
     - _target_: lightning.pytorch.callbacks.RichProgressBar
       refresh_rate: 5
@@ -41,22 +41,24 @@ trainer:
       label_names: ${label_names}
 
 
-hdf5_path: ${working_directory}/../../../hdf5/
+hdf5_prefix: ${working_directory}/../../../hdf5/audio_strong.${sample_rate}hz_64ms
 datamodule:
   _target_: m3l.common.datamodules.MultiDataModule
   train_dataset_fn_dict:
     strong:
       _partial_: true
       _target_: m3l.audio.common.datasets.FrameLabeledHDF5Dataset
-      dataset_path: ${hdf5_path}/strong.${sample_rate}hz_64ms.train.hdf5
-  train_batch_size_list: [2, 2, 4]
+      dataset_path: ${hdf5_prefix}.train.hdf5
+      grp_list: ${hdf5_prefix}.train.json
+  train_batch_size_list: [8]
 
   val_dataset_fn_dict:
     strong:
       _partial_: true
       _target_: m3l.audio.common.datasets.FrameLabeledHDF5Dataset
-      dataset_path: ${hdf5_path}/strong.${sample_rate}hz_64ms.validation.hdf5
-  val_batch_size_list: [4]
+      dataset_path: ${hdf5_prefix}.eval.hdf5
+      grp_list: ${hdf5_prefix}.eval.json
+  val_batch_size_list: [8]
   
 
 task:
@@ -65,8 +67,10 @@ task:
   label_names: ${label_names}
   time_resolution: 0.064
 
-  val_groundtruth: ${working_directory}/../../../annotation/validation.tsv
+  val_groundtruth: ${working_directory}/../../../metadata/strong_eval.tsv
   val_duration: 10
+
+  calc_event_metrics: False
   
   preprocessor:
     _target_: m3l.audio.common.preprocessors.Preprocessor
