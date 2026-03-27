@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 
 import torch
@@ -5,6 +8,13 @@ from torch import nn
 
 
 class TimeRoll(nn.Module):
+    """
+    Randomly roll the input tensor along the time dimension during training.
+
+    Args:
+        None
+    """
+
     def forward(self, x: torch.Tensor, y: torch.Tensor | None):
         if self.training:
             *_, T = x.shape

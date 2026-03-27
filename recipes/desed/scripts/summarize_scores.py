@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from argparse import ArgumentParser
 from pathlib import Path
 import pickle as pkl
@@ -24,7 +27,7 @@ def main():
         psds2 = sed_scores["psds2"]
         event_f1 = sed_scores["event_f1"]
 
-        score_str = f"{psds1:.3f}, {psds2:.3f}, {event_f1['micro_average']:.3f}"
+        score_str = f"{psds1:.3f}, {psds2:.3f}, {event_f1['macro_average']:.3f}"
         score_str_list.append(score_str)
 
     print(", ".join(score_str_list))

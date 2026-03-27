@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -12,6 +15,25 @@ from aiaccel.torch.datasets import CachedDataset, RawHDF5Dataset
 
 
 class AVDataset(Dataset):
+    """Audio-Visual dataset loader with caching and temporary video decoding.
+
+    Args:
+        dataset_path (Path): Path to the HDF5 dataset file.
+        sr (int): Audio sampling rate.
+        fps (int): Frames per second for video sampling.
+        train (bool, optional): Whether the dataset is for training. Defaults to False.
+        ignore_error (bool, optional): Whether to ignore corrupted samples. Defaults to False.
+
+    Methods:
+        __len__: Returns the total number of samples in the dataset.
+        __getitem__: Retrieves a single sample consisting of audio waveform and video frame.
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor]: A tuple containing:
+            - wav (torch.Tensor): Audio waveform tensor in ``bfloat16``.
+            - frames (torch.Tensor): Video frame tensor normalized to ``[0, 1]`` in ``bfloat16``.
+    """
+
     def __init__(
         self,
         dataset_path: Path,

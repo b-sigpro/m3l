@@ -1,3 +1,28 @@
+recipes/**
+!recipes/
+!recipes/**/
+dummy/
+hdf5/
+!recipes/**/*.py
+!recipes/**/*config.yaml
+!recipes/**/Makefile
+!recipes/**/*.mk
+recipes/**/merged_config.yaml
+
+*.wav
+*.info
+*.npy
+*.npz
+*.pkl
+*.ipynb
+*.json
+*.png
+!docs/**/*.png
+*.jpg
+!docs/**/*.jpg
+
+*.done
+
 .envrc
 .vscode/
 pyrightconfig.json
@@ -5,29 +30,19 @@ pyrightconfig.json
 local/
 src/
 3rd/
+*orig/
 singularity/
-bak*
+
 *token.txt
 
-recipes/**
-!recipes/**/scripts/
-!recipes/**/scripts/*.py
-!recipes/**/Makefile
-!recipes/**/*.mk
-!recipes/**/*.md
-!recipes/**/config.yaml
-hdf5/
+bak*
+tmp*
+sandbox*
 
-*.wav
-*.info
-*.npy
-*.pkl
-*.ipynb
-*.json
 
-*.done
 
-*.orig/
+
+docs/source/api_reference/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -100,7 +115,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/build/
 
 # PyBuilder
 .pybuilder/
@@ -200,3 +215,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+# pixi environments
+.pixi/*
+!.pixi/config.toml

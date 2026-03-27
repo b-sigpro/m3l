@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 
 import pandas as pd
@@ -13,7 +16,7 @@ def main():
     script_path = Path(__file__)
     dataset_path = script_path.parent.parent
 
-    for split in ["validation", "eval"]:
+    for split in ["validate", "test"]:
         print(f"{split=}")
 
         filename_list = list((dataset_path / "audio" / split).glob("*.wav"))
@@ -25,7 +28,7 @@ def main():
             metadata.append((filename.name, duration))
 
         df_metadata = pd.DataFrame(metadata, columns=["filename", "duration"])
-        df_metadata.to_csv(dataset_path / "metadata" / f"durations-{split}.csv", index=False)
+        df_metadata.to_csv(f"{dataset_path}/metadata/durations-{split}.csv", index=False)
 
 
 if __name__ == "__main__":

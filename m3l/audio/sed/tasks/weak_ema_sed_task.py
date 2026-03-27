@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import torch
 from torch import nn
 from torch.nn import functional as fn
@@ -10,6 +13,37 @@ from m3l.audio.sed.tasks.sed_task import SEDTask, Snapshot
 
 
 class WeakEMASEDTask(SEDTask):
+    """Sound Event Detection (SED) task with Exponential Moving Average (EMA).
+
+    This task extends a standard SED training loop by maintaining an
+    exponential moving average of the model parameters. During training,
+    both supervised (strong/weak labeled) and unsupervised data are used.
+    The EMA model serves as a teacher to regularize predictions via
+    consistency loss.
+
+    Args:
+        preprocessor (Preprocessor): Preprocessing pipeline for input waveforms.
+        model (nn.Module): Main SED model.
+        postprocessor (nn.Module): Postprocessing module applied to predictions.
+        n_class (int): Number of target classes.
+        label_names (list[str]): List of class label names.
+        time_resolution (float): Time resolution of predictions in seconds.
+        val_duration (float): Duration of validation clips in seconds.
+        val_groundtruth (str): Path to validation ground truth annotations.
+        optimizer_config (OptimizerConfig): Optimizer configuration.
+        freezed_model (nn.Module | None, optional): Frozen embedding model
+            to provide additional input features. Defaults to None.
+        threshold (float, optional): Decision threshold for event detection.
+            Defaults to 0.5.
+        alpha (float, optional): Weight for weakly labeled loss. Defaults to 1.0.
+        beta (float, optional): Weight for EMA consistency loss. Defaults to 1.0.
+        calc_event_metrics (bool, optional): Whether to compute event-based
+            metrics during validation. Defaults to True.
+
+    Returns:
+        torch.Tensor: Training loss value for the current batch.
+    """
+
     dump: Snapshot | None
 
     def __init__(

@@ -1,6 +1,8 @@
-from typing import Callable
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
 
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable
 import os
 from pathlib import Path
 

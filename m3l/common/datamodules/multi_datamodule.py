@@ -1,4 +1,9 @@
-from typing import Any, Callable
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
+from typing import Any
+
+from collections.abc import Callable
 
 from torch.utils.data import DataLoader, Dataset
 
@@ -9,6 +14,29 @@ from aiaccel.torch.datasets import scatter_dataset
 
 
 class MultiDataModule(lt.LightningDataModule):
+    """LightningDataModule for handling multiple training and validation datasets.
+
+    This module initializes multiple training and validation datasets, wraps them with
+    ``scatter_dataset`` if required, and provides combined dataloaders using
+    :class:`~lightning.pytorch.utilities.CombinedLoader`.
+
+    Args:
+        train_dataset_fn_dict (dict[str, Callable[..., Dataset[str]]]):
+            Dictionary of functions returning training datasets.
+        val_dataset_fn_dict (dict[str, Callable[..., Dataset[str]]]):
+            Dictionary of functions returning validation datasets.
+        train_batch_size_list (list[int]): List of batch sizes for each training dataset.
+        val_batch_size_list (int): Batch size for each validation dataset.
+        num_workers (int, optional): Number of worker processes for data loading. Defaults to 10.
+        wrap_scatter_dataset (bool, optional): Whether to wrap datasets with ``scatter_dataset``. Defaults to True.
+
+    Methods:
+        train_dataloader() -> CombinedLoader:
+            Returns the combined DataLoader for the training datasets.
+        val_dataloader() -> CombinedLoader:
+            Returns the combined DataLoader for the validation datasets.
+    """
+
     def __init__(
         self,
         train_dataset_fn_dict: dict[str, Callable[..., Dataset[str]]],
@@ -55,7 +83,9 @@ class MultiDataModule(lt.LightningDataModule):
         return CombinedLoader(dataloaders, mode="max_size_cycle")
 
     def train_dataloader(self):
+        """Return CombinedLoader for the training datasets."""
         return self._create_dataloader(self.train_dataset_list, self.train_batch_size_list, drop_last=True)
 
     def val_dataloader(self):
+        """Return CombinedLoader for the validation datasets."""
         return self._create_dataloader(self.val_dataset_list, self.val_batch_size_list, drop_last=False)

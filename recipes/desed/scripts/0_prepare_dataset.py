@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import csv
 from itertools import islice
 from pathlib import Path
@@ -10,15 +13,18 @@ from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
 
 
 def prepare_annotations(annotation_path: Path, config: DictConfig):
-    # train
     desed_path = Path(config.path.desed) / "metadata"
-    (annotation_path / "audioset_strong.tsv").symlink_to(desed_path / "train" / "audioset_strong.tsv")
-    (annotation_path / "synthetic21_train.tsv").symlink_to(
-        desed_path / "train" / "synthetic21_train" / "soundscapes.tsv"
-    )
+
+    # train
+    train_path = desed_path / "train"
+    (annotation_path / "audioset_strong.tsv").symlink_to(train_path / "audioset_strong.tsv")
+    (annotation_path / "synthetic21_train.tsv").symlink_to(train_path / "synthetic21_train" / "soundscapes.tsv")
+    (annotation_path / "weak.tsv").symlink_to(train_path / "weak.tsv")
 
     # validation
-    (annotation_path / "validation.tsv").symlink_to(desed_path / "validation" / "validation.tsv")
+    val_path = desed_path / "validation"
+    (annotation_path / "validation.tsv").symlink_to(val_path / "validation.tsv")
+    (annotation_path / "synthetic21_validation.tsv").symlink_to(val_path / "synthetic21_validation" / "soundscapes.tsv")  # noqa
 
     # eval
     public_eval_path = Path(config.path.dcase2021_public_eval) / "Ground-truth"
@@ -47,9 +53,14 @@ def prepare_audios(audio_path: Path, annotation_path: Path, config: DictConfig):
 
     (audio_train_path / "strong_label_real").symlink_to(desed_path / "train" / "strong_label_real")
     (audio_train_path / "synthetic21_train").symlink_to(desed_path / "train" / "synthetic21_train" / "soundscapes")
+    (audio_train_path / "weak").symlink_to(desed_path / "train" / "weak")
+    (audio_train_path / "unlabel_in_domain").symlink_to(desed_path / "train" / "unlabel_in_domain")
 
     # validation
     (audio_path / "validation").symlink_to(desed_path / "validation" / "validation")
+    (audio_path / "synthetic21_validation/").symlink_to(
+        desed_path / "validation" / "synthetic21_validation" / "soundscapes"
+    )  # noqa
 
     # eval
     with open(annotation_path / "eval.tsv") as f:

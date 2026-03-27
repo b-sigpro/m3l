@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from typing import Literal
 
 import numpy as np
@@ -8,6 +11,17 @@ from torch import nn
 
 
 class Scale(nn.Module):
+    """
+    Scale the waveform by a random factor during training.
+
+    Args:
+        normalize (Literal["std", "max", "none"] | bool): Normalization method for the waveform.
+            - "std": Normalize by standard deviation.
+            - "max": Normalize by maximum absolute value.
+            - "none" or False: No normalization.
+            Default is "std".
+    """
+
     def __init__(self, normalize: Literal["std", "max", "none"] | bool = "std"):
         super().__init__()
 

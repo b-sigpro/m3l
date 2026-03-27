@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from typing import Any
 
 from matplotlib import pyplot as plt
@@ -7,9 +10,21 @@ import lightning as lt
 
 
 class VisualizerCallback(lt.Callback):
+    """Callback to visualize model predictions during training and validation.
+
+    Args:
+        label_names (list[str]): List of class labels.
+        time_stretch (int, optional): Factor to stretch time axis of predictions. Defaults to 1.
+
+    Methods:
+        on_validation_start: Called when the validation loop starts. Plots spectrogram, ground truth,
+            and predictions for a random batch, and logs the figure to the experiment logger.
+        on_validation_end: Called when the validation loop ends. Runs the same visualization
+            as ``on_validation_start`` but with the "validation" tag.
+    """
+
     def __init__(self, label_names: list[str], time_stretch: int = 1):
         self.label_names = np.asarray(label_names)
-
         self.time_stretch = time_stretch
 
     def on_validation_start(self, trainer: lt.Trainer, pl_module: Any, tag: str = "training"):

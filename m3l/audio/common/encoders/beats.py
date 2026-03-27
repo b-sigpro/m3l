@@ -1,5 +1,7 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
-import sys
 
 import torch
 from torch import nn
@@ -14,8 +16,7 @@ class BEATsModel(nn.Module):
 
     def __init__(
         self,
-        beats_path: str | Path = "./3rd/unilm/beats/",
-        checkpoint_path: str | Path = "./3rd/unilm/beats/BEATs_iter3_plus_AS2M.pt",
+        checkpoint_path: str | Path = "BEATs_iter3_plus_AS2M.pt",
     ):
         """
         Initializes the BEATs model with the specified configuration and checkpoint.
@@ -27,8 +28,7 @@ class BEATsModel(nn.Module):
 
         super().__init__()
 
-        sys.path.append(str(beats_path))
-        from BEATs import BEATs, BEATsConfig
+        from m3l.third.beats.BEATs import BEATs, BEATsConfig
 
         checkpoint = torch.load(checkpoint_path)
 

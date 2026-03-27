@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from argparse import ArgumentParser
 from itertools import chain
 import json
@@ -9,59 +12,56 @@ from omegaconf import OmegaConf as oc
 import numpy as np
 import pandas as pd
 
-from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
 from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
 
 import librosa
 
 
 class SEDHDF5Writer(HDF5Writer[Path, tuple[pd.DataFrame, list[str]]]):
-    def __init__(self, split: str, desed_path: Path, sample_rate: int, label_resolution: int):
+    def __init__(self, split: str, dataset_path: Path, sample_rate: int, label_resolution: int):
         super().__init__()
 
         self.split = split
 
-        self.desed_path = desed_path
+        self.dataset_path = dataset_path
 
         self.sample_rate = sample_rate
         self.label_resolution = label_resolution
 
     def prepare_globals(self) -> tuple[list[Path], tuple[pd.DataFrame, list[str]]]:
-        with open(Path.cwd() / "metadata" / "label_names.json") as f:
+        with open(self.dataset_path / "metadata" / "label_names.json") as f:
             label_list = json.load(f)
 
         match self.split:
             case "train":
-                audio_path = self.desed_path / "audio" / "train"
+                audio_path = self.dataset_path / "audio" / "train"
                 wav_filename_list = list(
                     chain(
                         (audio_path / "strong_label_real").glob("*.wav"),
-                        (audio_path / "synthetic21_train" / "soundscapes").glob("*.wav"),
+                        (audio_path / "synthetic21_train").glob("*.wav"),
                     )
                 )
 
-                metadata_path = self.desed_path / "metadata" / "train"
+                metadata_path = self.dataset_path / "annotation"
                 annotations = pd.concat(
                     [
                         pd.read_table(metadata_path / "audioset_strong.tsv"),
-                        pd.read_table(metadata_path / "synthetic21_train/soundscapes.tsv"),
+                        pd.read_table(metadata_path / "synthetic21_train.tsv"),
                     ]
                 )
-            case "validation":
-                audio_path = self.desed_path / "audio" / "validation"
-                wav_filename_list = list(
-                    chain(
-                        (audio_path / "validation").glob("*.wav"), (audio_path / "synthetic21_validation").glob("*.wav")
-                    )
-                )
+            case "synthetic21_validation":
+                audio_path = self.dataset_path / "audio"
+                wav_filename_list = list((audio_path / "synthetic21_validation").glob("*.wav"))
 
-                metadata_path = self.desed_path / "metadata" / "validation"
-                annotations = pd.concat(
-                    [
-                        pd.read_table(metadata_path / "validation.tsv"),
-                        pd.read_table(metadata_path / "synthetic21_validation" / "soundscapes.tsv"),
-                    ]
-                )
+                metadata_path = self.dataset_path / "annotation"
+                annotations = pd.read_table(metadata_path / "synthetic21_validation.tsv")
+            case "validation":
+                audio_path = self.dataset_path / "audio"
+                wav_filename_list = list((audio_path / "validation").glob("*.wav"))
+
+                metadata_path = self.dataset_path / "annotation"
+                annotations = pd.read_table(metadata_path / "validation.tsv")
             case _:
                 raise ValueError(f'self.split must be "train" or "validation", but {self.split} is given.')
 
@@ -121,7 +121,7 @@ def main():
     hdf_filename = dataset_path / "hdf5" / f"strong.{args_str}.hdf5"
     hdf_filename.unlink(missing_ok=True)
 
-    writer = SEDHDF5Writer(args.split, Path(config.path.desed), args.sample_rate, args.label_resolution)
+    writer = SEDHDF5Writer(args.split, dataset_path, args.sample_rate, args.label_resolution)
     writer.write(hdf_filename, parallel=args.parallel)
 
 

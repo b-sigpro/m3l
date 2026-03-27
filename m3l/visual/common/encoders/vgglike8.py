@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from torch import nn
 from torch.nn.common_types import _size_2_t
 
@@ -35,6 +38,16 @@ class ConvPoolBlock(ConvBlock):
 
 
 class VGGLike8(nn.Sequential):
+    """A VGG-like 8-layer convolutional network.
+
+    This architecture mimics the early VGG design with stacked
+    convolutional and pooling blocks, culminating in a latent
+    feature representation.
+
+    Args:
+        dim_latent (int): Dimension of the latent feature map.
+    """
+
     def __init__(self, dim_latent: int):
         super().__init__(
             #

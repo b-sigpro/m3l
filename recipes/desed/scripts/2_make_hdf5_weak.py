@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from argparse import ArgumentParser
 import json
 from pathlib import Path
@@ -9,33 +12,31 @@ from omegaconf import OmegaConf as oc
 import numpy as np
 import pandas as pd
 
-from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
 from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
 
 import librosa
 
 
 class SEDHDF5Writer(HDF5Writer[Path, tuple[pd.DataFrame, list[str]]]):
-    def __init__(self, split: str, desed_path: Path, sample_rate: int):
+    def __init__(self, split: str, dataset_path: Path, sample_rate: int):
         super().__init__()
 
         self.split = split
 
-        self.desed_path = desed_path
+        self.dataset_path = dataset_path
 
         self.sample_rate = sample_rate
 
     def prepare_globals(self) -> tuple[list[Path], tuple[pd.DataFrame, list[str]]]:
-        with open(Path.cwd() / "metadata" / "label_names.json") as f:
+        with open(self.dataset_path / "metadata" / "label_names.json") as f:
             label_list = json.load(f)
 
         match self.split:
             case "train":
-                audio_path = self.desed_path / "audio" / "train"
-                wav_filename_list = list((audio_path / "weak").glob("*.wav"))
+                wav_filename_list = list((self.dataset_path / "audio" / "train" / "weak").glob("*.wav"))
 
-                metadata_path = self.desed_path / "metadata" / "train"
-                annotations = pd.read_table(metadata_path / "weak.tsv", index_col="filename")
+                annotations = pd.read_table(self.dataset_path / "annotation" / "weak.tsv", index_col="filename")
             case _:
                 raise ValueError(f'self.split must be "train", but {self.split} is given.')
 
@@ -88,7 +89,7 @@ def main():
     hdf_filename = dataset_path / "hdf5" / f"weak.{args_str}.hdf5"
     hdf_filename.unlink(missing_ok=True)
 
-    writer = SEDHDF5Writer(args.split, Path(config.path.desed), args.sample_rate)
+    writer = SEDHDF5Writer(args.split, dataset_path, args.sample_rate)
     writer.write(hdf_filename, parallel=args.parallel)
 
 

@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from argparse import ArgumentParser
 from pathlib import Path
 import pickle as pkl
@@ -89,7 +92,7 @@ def main():
         )
 
     print("PSDS1, PSDS2, Eb-F1")
-    print(f"{psds1:.3f}, {psds2:.3f}, {event_f1['micro_average']:.3f}")
+    print(f"{psds1:.3f}, {psds2:.3f}, {event_f1['macro_average']:.3f}")
 
 
 if __name__ == "__main__":

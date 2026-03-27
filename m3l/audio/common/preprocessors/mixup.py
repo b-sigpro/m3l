@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 
 import torch
@@ -5,6 +8,14 @@ from torch import nn
 
 
 class Mixup(nn.Module):
+    """
+    Mixup data augmentation for audio data.
+
+    Args:
+        beta (float): Beta parameter for the beta distribution used in mixup.
+        hard (bool): If True, use hard mixup (max of labels), otherwise use soft mixup (weighted average).
+    """
+
     def __init__(self, beta: float = 0.2, hard: bool = False):
         super().__init__()
 

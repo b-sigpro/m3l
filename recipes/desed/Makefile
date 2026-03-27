@@ -1,8 +1,8 @@
-# options
-SPLITS = train validation eval
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
 
-sample_rate := 16000
-label_resolution := 64
+# options
+SPLITS = train synthetic21_validation validation eval
 
 train_path := models/sed/dcase_crnn-beats.weak_ema/
 tag := dcase_crnn-beats
@@ -12,98 +12,64 @@ inference_command := python -m m3l.audio.sed.detect batch $$train_path $$src_pat
 
 inference_path = results/$(inference_name)
 
-# constants
-STAGES = stage0 stage1 stage2 stage3 stage4 stage5
+sample_rate := 16000
+label_resolution := 64
 
-STRONG_HDF5_SPLITS = train validation
+# constants
+STRONG_HDF5_SPLITS = train synthetic21_validation validation
 INFERENCE_SPLITS = validation eval
 
 PRINT_VARIABLES = cmd job_ops sample_rate label_resolution train_path tag inference_name inference_command
 
-.PHONY: all clean status $(STAGES) scores $(STAGES:%=skip-%)
-
-include ../globals.mk
-
-# general rules
-all: $(STAGES)
-
-
 # stage0: prepare dataset
-stage0: status .stage0.done
+stage0_dependencies = \
+	.0_prepare_dataset.done \
+	hdf5/
 
-.stage0.done: \
-	.prepare_dataset.done
-
-.prepare_dataset.done:
-	python ./scripts/prepare_dataset.py
+.0_prepare_dataset.done:
+	python ./scripts/0_prepare_dataset.py
 	touch $@
-
 
 # stage1: preprocess
-stage1: status .stage1.done
+stage1_dependencies = \
+	.1_summarize_durations.done \
+	.1_dump_ground_truth.done
 
-.stage1.done: \
-	.summarize_durations.done \
-	.dump_ground_truth.done
-
-.summarize_durations.done: .stage0.done
-	python ./scripts/summarize_durations.py
+.1_summarize_durations.done: | stage0
+	python ./scripts/1_summarize_durations.py
 	touch $@
 
-.dump_ground_truth.done: .stage0.done
-	python ./scripts/dump_ground_truth.py --resolution=64
+.1_dump_ground_truth.done: | stage0
+	python ./scripts/1_dump_ground_truth.py --resolution=64
 	touch $@
-
 
 # stage2: make hdf5
-stage2: status \
-	.stage2.$(sample_rate)hz_$(label_resolution)ms.done
+stage2_dependencies = \
+	$(STRONG_HDF5_SPLITS:%=.2_make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done) \
+	.2_make_hdf5_weak.$(sample_rate)hz.train.done \
+	.2_make_hdf5_unsupervised.$(sample_rate)hz.train.done
 
-.stage2.$(sample_rate)hz_$(label_resolution)ms.done: \
-	$(STRONG_HDF5_SPLITS:%=.make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done) \
-	.make_hdf5_weak.$(sample_rate)hz.train.done \
-	.make_hdf5_unsupervised.$(sample_rate)hz.train.done
-
-.make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done: .stage1.done
-	$(cmd) mpi $(job_ops) --n_procs=40 jobs/make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms/$*.log -- \
-		python ./scripts/make_hdf5_strong.py $* --sample_rate=$(sample_rate) --label_resolution=$(label_resolution) --parallel
+.2_make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done: | stage1
+	$(cmd) mpi $(job_ops) --n_procs=40 jobs/2_make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms/$*.log -- \
+		python ./scripts/2_make_hdf5_strong.py $* --sample_rate=$(sample_rate) --label_resolution=$(label_resolution) --parallel
 	touch $@
 	
-.make_hdf5_weak.$(sample_rate)hz.%.done: .stage1.done
-	$(cmd) mpi $(job_ops) --n_procs=40 jobs/make_hdf5_weak.$(sample_rate)hz/$*.log -- \
-		python ./scripts/make_hdf5_weak.py $* --sample_rate=$(sample_rate) --parallel
+.2_make_hdf5_weak.$(sample_rate)hz.%.done: | stage1
+	$(cmd) mpi $(job_ops) --n_procs=40 jobs/2_make_hdf5_weak.$(sample_rate)hz/$*.log -- \
+		python ./scripts/2_make_hdf5_weak.py $* --sample_rate=$(sample_rate) --parallel
 	touch $@
 	
-.make_hdf5_unsupervised.$(sample_rate)hz.%.done: .stage1.done
-	$(cmd) mpi $(job_ops) --n_procs=40 jobs/make_hdf5_unsupervised.$(sample_rate)hz/$*.log -- \
-		python ./scripts/make_hdf5_unsupervised.py $* --sample_rate=$(sample_rate) --parallel
-	touch $@
-
-
-# stage3: training
-stage3: status $(train_path)/train.done
-
-$(train_path)/.stage3.done: $(train_path)/.train.done
-
-$(train_path)/train.done: $(train_path)/config.yaml .stage2.$(sample_rate)hz_$(label_resolution)ms.done
-	# rm -r \
-	# 	$(train_path)/train.*
-	# 	$(train_path)/merged_config.yaml
-	# 	$(train_path)/checkpoints
-	# 	$(train_path)/events*
-	# 	$(train_path)/hparams.yaml
-	$(cmd) train $(job_ops) --n_gpus=8 --walltime=4:0:0 $(job_ops) $(train_path)/train.log -- \
-		python -m aiaccel.torch.apps.train $(train_path)/config.yaml
+.2_make_hdf5_unsupervised.$(sample_rate)hz.%.done: | stage1
+	$(cmd) mpi $(job_ops) --n_procs=40 jobs/2_make_hdf5_unsupervised.$(sample_rate)hz/$*.log -- \
+		python ./scripts/2_make_hdf5_unsupervised.py $* --sample_rate=$(sample_rate) --parallel
 	touch $@
 
 
 # stage4: inference
-stage4: status $(inference_path)/.stage4.done
-
-$(inference_path)/.stage4.done: \
+stage4_dependencies = \
 	$(INFERENCE_SPLITS:%=$(inference_path)/.inference.%.done)
 
-$(inference_path)/.inference.%.done: $(train_path)/.stage3.done
+$(inference_path)/.inference.%.done: | stage3
 	n_tasks=$(shell find audio/$*/ -name "*.wav" | wc -l) && \
 	train_path=$(train_path) && \
 	src_path=audio/$* && \
@@ -112,17 +78,16 @@ $(inference_path)/.inference.%.done: $(train_path)/.stage3.done
 		$(inference_command)
 	touch $@
 
-# stage5: evaluation
-stage5: status $(inference_path)/.stage5.done scores
+stage5: | .WAIT scores
 
-$(inference_path)/.stage5.done: \
-	$(INFERENCE_SPLITS:%=$(inference_path)/.evaluate_sed_scores.%.done)
+stage5_dependencies = \
+	$(INFERENCE_SPLITS:%=$(inference_path)/.5_evaluate_sed_scores.%.done)
 
-$(inference_path)/.evaluate_sed_scores.%.done: $(inference_path)/.stage4.done
-	python ./scripts/evaluate_sed_scores.py $* $(inference_path) --label_resolution=$(label_resolution)
+$(inference_path)/.5_evaluate_sed_scores.%.done: | stage4
+	python ./scripts/5_evaluate_sed_scores.py $* $(inference_path) --label_resolution=$(label_resolution)
 	touch $@
 
-scores: $(inference_path)/.stage5.done
+scores:
 	python ./scripts/summarize_scores.py $(inference_path)
 
 
@@ -137,3 +102,5 @@ clean:
 		./jobs
 
 	-rm .*.done
+
+include ../globals.mk

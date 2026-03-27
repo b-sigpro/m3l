@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from functools import partial
 
 import torch
@@ -9,6 +12,24 @@ from m3l.common.nn import TupleSequential
 
 
 class Preprocessor(nn.Module):
+    """
+    Preprocessor for audio data that applies a series of transformations to the waveform
+    and computes the mel spectrogram and log-mel spectrogram.
+
+    Args:
+        sample_rate (int): Sample rate of the audio.
+        n_fft (int): Size of the FFT window.
+        hop_length (int): Number of samples between successive frames.
+        n_mels (int): Number of mel frequency bins.
+        wav_transforms (list[nn.Module], optional): List of transformations to apply to the waveform.
+        mel_transforms (list[nn.Module], optional): List of transformations to apply to the mel spectrogram.
+        logmel_transforms (list[nn.Module], optional): List of transformations to apply to the log-mel spectrogram.
+
+    Returns:
+        dict: A dictionary containing the waveform, mel spectrogram, and log-mel spectrogram.
+        torch.Tensor | None: Optional target tensor if provided.
+    """
+
     def __init__(
         self,
         sample_rate: int,

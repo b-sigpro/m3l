@@ -1,0 +1,120 @@
+_base_: ${base_config_path}/train_ddp.yaml
+
+sample_rate: 16000
+n_fft: 512
+hop_length: 160
+n_mels: 64
+
+n_class: 527
+
+checkpoint_filename: "best"
+
+label_names:
+  _target_: m3l.utils.label_loader
+  filename: ${working_directory}/../../../metadata/weak_label_names.json
+
+trainer:
+  max_epochs: 100
+  gradient_clip_val: 5.0
+  sync_batchnorm: True
+
+  limit_train_batches: 1000
+
+  precision: bf16-mixed
+  
+  benchmark: True
+  use_distributed_sampler: False
+
+  callbacks:
+    - _target_: lightning.pytorch.callbacks.ModelCheckpoint
+      save_top_k: 1
+      save_last: True
+      monitor: "validation/mean_average_precision"
+      mode: "max"
+      filename: ${checkpoint_filename}
+
+    - _target_: lightning.pytorch.callbacks.RichProgressBar
+      refresh_rate: 5
+    - _target_: lightning.pytorch.callbacks.RichModelSummary
+      max_depth: 3
+    
+    - _target_: lightning.pytorch.callbacks.LearningRateMonitor
+      logging_interval: "epoch"
+    
+    - _target_: m3l.audio.tagging.callbacks.visualizer.VisualizerCallback
+      label_names: ${label_names}
+
+hdf5_prefix: ${working_directory}/../../../hdf5/audio_weak.${sample_rate}hz
+datamodule:
+  _target_: m3l.common.datamodules.SingleDataModule
+  train_dataset_fn:
+    _partial_: true
+    _target_: m3l.audio.common.datasets.ClipLabeledHDF5Dataset
+    dataset_path: ${hdf5_prefix}.train.hdf5
+    grp_list: ${hdf5_prefix}.train.json
+  
+  train_sampler_fn:
+    _partial_: true
+    _target_: m3l.utils.balanced_sampler.BalancedSampler
+    metadata_filename: ${working_directory}/../../../metadata/weak_train.json
+
+  val_dataset_fn:
+    _partial_: true
+    _target_: m3l.audio.common.datasets.ClipLabeledHDF5Dataset
+    dataset_path: ${hdf5_prefix}.eval.hdf5
+    grp_list: ${hdf5_prefix}.eval.json
+
+  batch_size: 16
+  num_workers: 12
+  
+
+task:
+  _target_: m3l.audio.tagging.tasks.tagging_task.TaggingTask
+  n_class: ${n_class}
+
+  preprocessor:
+    _target_: m3l.audio.common.preprocessors.Preprocessor
+    sample_rate: ${sample_rate}
+    n_fft: ${n_fft}
+    hop_length: ${hop_length}
+    n_mels: ${n_mels}
+    wav_transforms:
+      - _target_: m3l.audio.common.preprocessors.scale.Scale
+        normalize: "none"
+    logmel_transforms:
+      - _target_: m3l.audio.common.preprocessors.batch_normalize.BatchNormalize
+        num_channels: ${n_mels}
+      - _target_: m3l.audio.common.preprocessors.clamp.Clamp
+      - _target_: m3l.audio.common.preprocessors.mixup.Mixup
+        beta: 1.0
+      - _target_: m3l.audio.common.preprocessors.spec_augment.SpecAugment
+        n_time_masks: 2
+        time_mask_param: 64
+        n_freq_masks: 2
+        freq_mask_param: 10
+
+  model:
+    _target_: m3l.audio.tagging.models.cnn14.CNN14
+    n_class: ${n_class}
+
+  optimizer_config:
+    _target_: aiaccel.torch.lightning.OptimizerConfig
+    optimizer_generator:
+      _partial_: True
+      _target_: torch.optim.AdamW
+      lr: 1.e-3
+      weight_decay: 1.e-4
+    scheduler_generator:
+      _partial_: True
+      _convert_: "all"
+      _target_: m3l.common.lr_schedulers.sequential_lr.SequentialLR
+      schedulers_fn:
+        - _target_: torch.optim.lr_scheduler.LinearLR
+          _partial_: True
+          start_factor: 1.e-3
+          end_factor: 1.0
+          total_iters: 5000
+        - _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+          _partial_: True
+          T_max: 95000  # 300 * 1000 - 5000
+      milestones: [5000]

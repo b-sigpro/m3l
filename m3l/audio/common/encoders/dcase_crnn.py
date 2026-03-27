@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from einops import rearrange
 
 import torch
@@ -29,6 +32,30 @@ class Conv2dBlock(nn.Sequential):
 
 
 class CRNN(nn.Module):
+    """Convolutional Recurrent Neural Network (CRNN) for audio sequence modeling.
+
+    This model first applies a series of 2D convolutional blocks with gated
+    linear units (GLU) and pooling, followed by a recurrent GRU encoder to
+    capture temporal dependencies. Optionally, external embeddings can be
+    integrated into the convolutional features.
+
+    Args:
+        dropout (float, optional): Dropout probability applied after CNN and GRU layers.
+            Defaults to 0.5.
+        dropout_rnn (float, optional): Dropout probability applied within GRU layers.
+            Defaults to 0.0.
+        dim_emb (int | None, optional): Dimension of external embedding features.
+            If provided, embeddings are concatenated to convolutional features.
+            Defaults to None.
+        dropout_emb (float, optional): Dropout probability applied after embedding projection.
+            Defaults to 0.5.
+
+    Returns:
+        torch.Tensor: Encoded feature sequence of shape ``[B, C, T]``, where
+        ``B`` is the batch size, ``C`` is the channel dimension, and ``T`` is
+        the temporal length.
+    """
+
     def __init__(
         self,
         dropout: float = 0.5,

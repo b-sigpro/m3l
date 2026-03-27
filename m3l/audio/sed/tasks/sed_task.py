@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -22,6 +25,39 @@ class Snapshot:
 
 
 class SEDTask(OptimizerLightningModule):
+    """Base class for Sound Event Detection (SED) training and evaluation.
+
+    This task defines a standard supervised training loop for sound event
+    detection using strong labels. It supports segment-level and event-level
+    evaluation with metrics such as F1-score and Polyphonic Sound Detection
+    Score (PSDS).
+
+    Args:
+        preprocessor (Preprocessor): Preprocessing pipeline for input waveforms.
+        model (nn.Module): Neural network model for SED.
+        postprocessor (nn.Module): Postprocessing module applied to raw predictions.
+        n_class (int): Number of sound event classes.
+        label_names (list[str]): List of class label names.
+        time_resolution (float): Time resolution of predictions in seconds.
+        val_duration (float): Duration of validation audio clips in seconds.
+        val_groundtruth (str): Path to validation ground truth annotations.
+        optimizer_config (OptimizerConfig): Optimizer configuration for training.
+        freezed_model (nn.Module | None, optional): Frozen model for feature
+            embeddings (e.g., pretrained encoder). Defaults to None.
+        threshold (float, optional): Decision threshold for event detection.
+            Defaults to 0.5.
+        alpha (float, optional): Weight factor for loss terms. Defaults to 1.0.
+        calc_event_metrics (bool, optional): Whether to compute event-level
+            metrics (PSDS, event-F1) in validation. Defaults to True.
+
+    Attributes:
+        dump (Snapshot | None): Stores a snapshot of the most recent batch
+            (features, predictions, and labels) for analysis or visualization.
+
+    Returns:
+        torch.Tensor: Training loss during training step.
+    """
+
     dump: Snapshot | None
 
     def __init__(

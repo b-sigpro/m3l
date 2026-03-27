@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from dataclasses import dataclass
 
 import torch
@@ -18,6 +21,23 @@ class DumpData:
 
 
 class AVCTask(OptimizerLightningModule):
+    """Audio-Visual Contrastive (AVC) task for joint audio-video representation learning.
+
+    Args:
+        audio_preprocessor (nn.Module): Preprocessing module for raw audio waveforms.
+        audio_encoder (nn.Module): Encoder module for audio features.
+        video_encoder (nn.Module): Encoder module for video frames.
+        optimizer_config (OptimizerConfig): Configuration object for optimizer setup.
+        tau (float, optional): Temperature parameter for InfoNCE loss. Defaults to 0.1.
+
+    Methods:
+        training_step: Performs a single training step with InfoNCE loss.
+        validation_step: Performs a validation step using the same pipeline as training.
+
+    Returns:
+        torch.Tensor: The computed loss value during training/validation.
+    """
+
     def __init__(
         self,
         audio_preprocessor: nn.Module,

@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 
 import torch
@@ -7,6 +10,13 @@ from torchvision.transforms.functional import resize
 
 
 class TimeWarp(nn.Module):
+    """
+    Randomly warp the time dimension of the input tensor during training.
+
+    Args:
+        None
+    """
+
     def forward(self, x: torch.Tensor, y: torch.Tensor | None):
         if self.training:
             _, F, T = x.shape

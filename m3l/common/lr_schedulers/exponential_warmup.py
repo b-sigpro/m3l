@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 
 from torch.optim import Optimizer
@@ -5,6 +8,17 @@ from torch.optim.lr_scheduler import LRScheduler
 
 
 class ExponentialWarmupScheduler(LRScheduler):
+    """Exponential warmup learning rate scheduler.
+
+    The learning rate increases according to an exponential function during the warmup period.
+
+    Args:
+        optimizer (Optimizer): Wrapped optimizer.
+        max_lr (float): Maximum learning rate to reach after warmup.
+        duration (int): Number of steps for the warmup phase.
+        exponent (float, optional): Exponent for the exponential scaling function. Defaults to -5.0.
+    """
+
     def __init__(self, optimizer: Optimizer, max_lr: float, duration: int, exponent: float = -5.0):
         self.optimizer = optimizer
 

@@ -1,8 +1,18 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 import torch
 from torch import nn
 
 
 class GaussianNoise(nn.Module):
+    """
+    Add Gaussian noise to the log-mel spectrogram during training.
+
+    Args:
+        max_scale (float): Maximum scale of the Gaussian noise to be added. Default is 0.2.
+    """
+
     def __init__(self, max_scale: float = 0.2):
         super().__init__()
 

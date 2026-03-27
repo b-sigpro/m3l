@@ -1,3 +1,6 @@
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from torch import nn
 from torch.nn.common_types import _size_1_t, _size_2_t
 
@@ -42,6 +45,24 @@ class AvgMaxPool1d(nn.Module):
 
 
 class CNN14(nn.Sequential):
+    """CNN14 model for audio feature extraction.
+
+    This model is based on the PANNs CNN14 architecture. It applies a series
+    of convolutional blocks followed by global pooling and a final 1D
+    convolution to produce latent representations of input spectrograms.
+
+    Args:
+        dim_latent (int, optional): Dimension of the latent feature space.
+            Defaults to 512.
+        dropout (float, optional): Dropout rate applied in intermediate layers.
+            Defaults to 0.2.
+        dropout_last (float, optional): Dropout rate applied before the final
+            projection layer. Defaults to 0.5.
+
+    Returns:
+        torch.Tensor: Latent feature tensor of shape ``[B, dim_latent, T]``.
+    """
+
     def __init__(
         self,
         dim_latent: int = 512,

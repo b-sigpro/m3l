@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -7,26 +10,26 @@ from omegaconf import OmegaConf as oc
 
 import numpy as np
 
-from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
 from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
 
 import librosa
 
 
 class SEDHDF5Writer(HDF5Writer[Path, None]):
-    def __init__(self, split: str, desed_path: Path, sample_rate: int):
+    def __init__(self, split: str, dataset_path: Path, sample_rate: int):
         super().__init__()
 
         self.split = split
 
-        self.desed_path = desed_path
+        self.dataset_path = dataset_path
 
         self.sample_rate = sample_rate
 
     def prepare_globals(self) -> tuple[list[Path], None]:
         match self.split:
             case "train":
-                audio_path = self.desed_path / "audio" / "train"
+                audio_path = self.dataset_path / "audio" / "train"
                 wav_filename_list = list((audio_path / "unlabel_in_domain").glob("*.wav"))
             case _:
                 raise ValueError(f'self.split must be "train", but {self.split} is given.')
@@ -74,7 +77,7 @@ def main():
     hdf_filename = dataset_path / "hdf5" / f"unsupervised.{args_str}.hdf5"
     hdf_filename.unlink(missing_ok=True)
 
-    writer = SEDHDF5Writer(args.split, Path(config.path.desed), args.sample_rate)
+    writer = SEDHDF5Writer(args.split, dataset_path, args.sample_rate)
     writer.write(hdf_filename, parallel=args.parallel)
 
 
