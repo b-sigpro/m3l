@@ -15,16 +15,6 @@ Transformer blocks
     TransformerDecoderLayer
     TransformerEncoderLayer
 
-Positional embeddings
----------------------
-
-.. currentmodule:: m3l.common.nn
-
-.. autosummary::
-    :toctree: generated/
-
-    SinusoidalPositionalEmbedding
-
 Learning rate schedulers
 ------------------------
 
@@ -34,7 +24,6 @@ Learning rate schedulers
     :toctree: generated/
 
     ExponentialWarmupScheduler
-    SequentialLR
 
 Datamodules
 -----------

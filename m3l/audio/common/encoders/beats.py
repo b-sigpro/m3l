@@ -5,6 +5,7 @@ from pathlib import Path
 
 import torch
 from torch import nn
+from torch.nn.utils import remove_weight_norm as _remove_weight_norm
 
 
 class BEATsModel(nn.Module):
@@ -16,7 +17,10 @@ class BEATsModel(nn.Module):
 
     def __init__(
         self,
-        checkpoint_path: str | Path = "BEATs_iter3_plus_AS2M.pt",
+        checkpoint_path: str | Path = "./3rd/unilm/beats/BEATs_iter3_plus_AS2M.pt",
+        freeze: bool = True,
+        overwrite_encoder_layerdrop: float | None = None,
+        remove_weight_norm: bool = False,
     ):
         """
         Initializes the BEATs model with the specified configuration and checkpoint.
@@ -24,9 +28,13 @@ class BEATsModel(nn.Module):
         Args:
             beats_path (str | Path): Path to the BEATs source directory.
             checkpoint_path (str | Path): Path to the pretrained BEATs model checkpoint.
+            freeze (bool): Whether to freeze the pretrained model weights.
+            overwrite_encoder_layerdrop (float | None): Override value for the encoder layerdrop ratio.
+            remove_weight_norm (bool): Whether to remove weight normalization from the model.
         """
 
         super().__init__()
+        self.freeze = freeze
 
         from m3l.third.beats.BEATs import BEATs, BEATsConfig
 
@@ -34,13 +42,19 @@ class BEATsModel(nn.Module):
 
         cfg = BEATsConfig(checkpoint["cfg"])
 
+        if overwrite_encoder_layerdrop is not None:
+            cfg.encoder_layerdrop = overwrite_encoder_layerdrop  # override encoder layerdrop ratio
+
         self.beats = BEATs(cfg)  # .cuda()
         self.beats.load_state_dict(checkpoint["model"])
 
-        self.beats.eval()
-        for param in self.beats.parameters():
-            param.requires_grad = False
+        if remove_weight_norm:
+            _remove_weight_norm(self.beats.encoder.pos_conv[0], name="weight")
 
-    @torch.no_grad
+        if freeze:
+            for param in self.beats.parameters():
+                param.requires_grad = False
+
     def forward(self, feats: dict[str, torch.Tensor]):
-        return self.beats.extract_features(feats["wav"])[0]
+        with torch.set_grad_enabled(torch.is_grad_enabled() and not self.freeze):
+            return self.beats.extract_features(feats["wav"])[0]

@@ -29,7 +29,7 @@ gpu-array:
 mpi:
   job: |-
     source /etc/profile.d/modules.sh
-    module load hpcx
+    module load hpcx/2.20
 
     mpirun -np {args.n_procs} -bind-to none -map-by slot \
         --mca pml ob1 \
@@ -41,7 +41,7 @@ mpi:
 train:
   job: |-
     source /etc/profile.d/modules.sh
-    module load hpcx
+    module load hpcx/2.20
 
     mpirun -np {args.n_gpus} -bind-to none -map-by slot \
         --mca pml ob1 \

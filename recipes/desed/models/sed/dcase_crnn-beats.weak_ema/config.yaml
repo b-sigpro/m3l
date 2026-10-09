@@ -33,4 +33,4 @@ task:
 
   freezed_model:
     _target_: m3l.audio.common.encoders.beats.BEATsModel
-    checkpoint_path: ${oc.env:BEATS_CKPT_PATH}/BEATs_iter3_plus_AS2M.pt
+    checkpoint_path: ${oc.env:BEATS_CKPT_PATH,${working_directory}}/BEATs_iter3_plus_AS2M.pt

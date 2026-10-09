@@ -1,4 +1,7 @@
-_base_: ${base_config_path}/train_ddp.yaml
+_base_: ${resolve_pkg_path:aiaccel.torch.apps.config}/train_ddp.yaml
+
+n_gpus: 8
+walltime: 4:0:0
 
 sample_rate: 16000
 n_fft: 2048

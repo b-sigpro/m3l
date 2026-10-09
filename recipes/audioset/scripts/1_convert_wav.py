@@ -6,9 +6,9 @@
 from argparse import ArgumentParser
 from functools import partial
 from multiprocessing import Pool
-import os
 from pathlib import Path
 
+from aiaccel.job.utils import split_tasks
 from rich.progress import track
 
 import librosa as lr
@@ -46,11 +46,7 @@ def main():
 
     src_filename_list.sort()
 
-    if "TASK_INDEX" in os.environ:
-        start = int(os.environ["TASK_INDEX"]) - 1
-        end = start + int(os.environ["TASK_STEPSIZE"])
-
-        src_filename_list = src_filename_list[start:end]
+    src_filename_list = split_tasks(src_filename_list)
 
     dst_path = dataset_path / args.split / "audios"
     dst_path.mkdir(parents=True, exist_ok=True)

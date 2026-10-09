@@ -9,19 +9,21 @@ inference_command := "python -m sbss.nfca.iter.separate $$src_path $$dst_path"
 
 inference_path = results/$(inference_name)
 
-# stage 1
-.stage1.done: | \
-	.dump_strong_label_names.done \
-	.convert_strong_groundtruth.done \
-	$(SPLITS:%=.convert_wav.%.done)
+stage1_dependencies = \
+	.1_dump_strong_label_names.done \
+	.1_convert_strong_groundtruth.done \
+	.1_prepare_balanced_sampler_strong.done \
+	$(SPLITS:%=.1_convert_wav.%.done)
+
+
+.1_prepare_balanced_sampler_strong.done: | stage0
+	python ./scripts/1_prepare_balanced_sampler_strong.py
 	touch $@
 
+stage2_dependencies = \
+	$(SPLITS:%=.2_make_audio_strong_hdf5.%.done)
 
-# stage 2
-.stage2.done: | $(SPLITS:%=.make_audio_strong_hdf5.%.done)
-	touch $@
-
-.make_audio_strong_hdf5.%.done: | .stage1.done
-	$(cmd) mpi $(job_ops) --n_procs=48 jobs/make_audio_strong_hdf5/$*.log -- \
-		python ./scripts/make_audio_strong_hdf5.py $* --parallel
+.2_make_audio_strong_hdf5.%.done: | stage1
+	$(cmd) mpi $(job_ops) --n_procs=48 jobs/2_make_audio_strong_hdf5/$*.log -- \
+		python ./scripts/2_make_audio_strong_hdf5.py $* --parallel
 	touch $@

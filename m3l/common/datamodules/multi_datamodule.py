@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 
 import lightning as lt
 from lightning.pytorch.utilities import CombinedLoader
+from lightning.pytorch.utilities.combined_loader import _LITERAL_SUPPORTED_MODES
 
 from aiaccel.torch.datasets import scatter_dataset
 
@@ -29,6 +30,8 @@ class MultiDataModule(lt.LightningDataModule):
         val_batch_size_list (int): Batch size for each validation dataset.
         num_workers (int, optional): Number of worker processes for data loading. Defaults to 10.
         wrap_scatter_dataset (bool, optional): Whether to wrap datasets with ``scatter_dataset``. Defaults to True.
+        train_mode (_LITERAL_SUPPORTED_MODES, optional): Mode for training dataloader. Defaults to "max_size_cycle".
+        val_mode (_LITERAL_SUPPORTED_MODES, optional): Mode for validation dataloader. Defaults to "max_size_cycle".
 
     Methods:
         train_dataloader() -> CombinedLoader:
@@ -42,9 +45,11 @@ class MultiDataModule(lt.LightningDataModule):
         train_dataset_fn_dict: dict[str, Callable[..., Dataset[str]]],
         val_dataset_fn_dict: dict[str, Callable[..., Dataset[str]]],
         train_batch_size_list: list[int],
-        val_batch_size_list: int,
+        val_batch_size_list: list[int],
         num_workers: int = 10,
         wrap_scatter_dataset: bool = True,
+        train_mode: _LITERAL_SUPPORTED_MODES = "max_size_cycle",
+        val_mode: _LITERAL_SUPPORTED_MODES = "max_size_cycle",
     ):
         super().__init__()
 
@@ -60,32 +65,43 @@ class MultiDataModule(lt.LightningDataModule):
             shuffle=True,
         )
 
+        self.train_mode = train_mode
+        self.val_mode = val_mode
+
         self.wrap_scatter_dataset = wrap_scatter_dataset
 
     def setup(self, stage: str | None):
         if stage == "fit":
             if self.wrap_scatter_dataset:
-                self.train_dataset_list = {key: scatter_dataset(fn()) for key, fn in self.train_dataset_fn_dict.items()}
-                self.val_dataset_list = {key: scatter_dataset(fn()) for key, fn in self.val_dataset_fn_dict.items()}
+                self.train_dataset_dict = {key: scatter_dataset(fn()) for key, fn in self.train_dataset_fn_dict.items()}
+                self.val_dataset_dict = {key: scatter_dataset(fn()) for key, fn in self.val_dataset_fn_dict.items()}
             else:
-                self.train_dataset = self.train_dataset_fn()
-                self.val_dataset = self.val_dataset_fn_dict()
+                self.train_dataset_dict = {key: fn() for key, fn in self.train_dataset_fn_dict.items()}
+                self.val_dataset_dict = {key: fn() for key, fn in self.val_dataset_fn_dict.items()}
 
             # print(f"Dataset size: {len(self.train_dataset)=},  {len(self.val_dataset)=}")
         else:
             raise ValueError("`stage` is not 'fit'.")
 
-    def _create_dataloader(self, dataset_list: list[Dataset], batch_size_list: list[int], **kwargs: Any):
+    def _create_dataloader(
+        self,
+        dataset_dict: dict[str, Dataset],
+        batch_size_list: list[int],
+        mode: _LITERAL_SUPPORTED_MODES,
+        **kwargs: Any,
+    ):
         dataloaders = {}
-        for (key, ds), bs in zip(dataset_list.items(), batch_size_list):
+        for (key, ds), bs in zip(dataset_dict.items(), batch_size_list):
             dataloaders[key] = DataLoader(ds, bs, **kwargs, **self.default_dataloader_kwargs)
 
-        return CombinedLoader(dataloaders, mode="max_size_cycle")
+        return CombinedLoader(dataloaders, mode=mode)
 
     def train_dataloader(self):
         """Return CombinedLoader for the training datasets."""
-        return self._create_dataloader(self.train_dataset_list, self.train_batch_size_list, drop_last=True)
+        return self._create_dataloader(
+            self.train_dataset_dict, self.train_batch_size_list, self.train_mode, drop_last=True
+        )
 
     def val_dataloader(self):
         """Return CombinedLoader for the validation datasets."""
-        return self._create_dataloader(self.val_dataset_list, self.val_batch_size_list, drop_last=False)
+        return self._create_dataloader(self.val_dataset_dict, self.val_batch_size_list, self.val_mode, drop_last=False)

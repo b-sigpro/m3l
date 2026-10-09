@@ -6,7 +6,7 @@ from torch import nn
 
 
 class BatchNormalize(nn.Module):
-    """Apply 2D batch normalization to the input tensor while keeping the label unchanged.
+    """Apply 1D batch normalization to the input tensor while keeping the label unchanged.
 
     Args:
         num_channels (int): Number of feature channels in the input tensor.
@@ -20,7 +20,7 @@ class BatchNormalize(nn.Module):
     def __init__(self, num_channels):
         super().__init__()
 
-        self.bn = nn.BatchNorm2d(num_channels)
+        self.bn = nn.BatchNorm1d(num_channels)
 
     def forward(self, logx: torch.Tensor, y: torch.Tensor | None = None):
         return self.bn(logx), y

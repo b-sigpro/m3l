@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 import pickle as pkl
 
-from hydra.utils import instantiate
 from omegaconf import DictConfig, ListConfig
 from omegaconf import OmegaConf as oc
 
@@ -15,7 +14,7 @@ import numpy as np
 import torch
 from torch.nn import functional as fn  # noqa
 
-from aiaccel.config import load_config
+from aiaccel.torch.lightning import load_checkpoint
 
 import librosa
 
@@ -37,16 +36,7 @@ def add_common_args(parser):
 
 
 def initialize(args: Namespace, unk_args: list[str]):
-    config = load_config(args.model_path / "merged_config.yaml")
-    config = oc.merge(config, oc.from_cli(unk_args))
-
-    checkpoint_path = args.model_path / "checkpoints" / f"{config.checkpoint_filename}.ckpt"
-    config.task._target_ += ".load_from_checkpoint"
-    model = instantiate(
-        config.task,
-        checkpoint_path=checkpoint_path,
-        map_location=args.device,
-    )
+    model, config = load_checkpoint(args.model_path, device=args.device, overwrite_config=oc.from_cli(unk_args))
     model.eval()
 
     ctx = Context(model, config)

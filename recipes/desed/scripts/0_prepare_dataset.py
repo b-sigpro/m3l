@@ -9,7 +9,7 @@ from pathlib import Path
 
 from omegaconf import DictConfig
 
-from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.config import prepare_config
 
 
 def prepare_annotations(annotation_path: Path, config: DictConfig):
@@ -77,10 +77,10 @@ def main():
     script_path = Path(__file__)
     dataset_path = script_path.parent.parent
 
-    overwrite_omegaconf_dumper()
-
-    config: DictConfig = load_config(dataset_path / "config.yaml")  # type: ignore
-    print_config(config)
+    config = prepare_config(
+        dataset_path / "config.yaml",
+        print_config=True,
+    )
 
     annotation_path = dataset_path / "annotation"
     annotation_path.mkdir()

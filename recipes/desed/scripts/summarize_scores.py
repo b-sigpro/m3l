@@ -11,10 +11,11 @@ import pickle as pkl
 def main():
     parser = ArgumentParser()
     parser.add_argument("inference_path", type=Path)
+    parser.add_argument("--splits", nargs="+")
     args = parser.parse_args()
 
     score_str_list = []
-    for split in ["validation", "eval"]:
+    for split in args.splits:
         with open(args.inference_path / split / "sed_scores.pkl", "rb") as f:
             sed_scores = pkl.load(f)
             # pkl.dump({

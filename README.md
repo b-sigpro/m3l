@@ -1,16 +1,64 @@
 <div align="center"><img src="https://raw.githubusercontent.com/b-sigpro/m3l/master/docs/image/logo_m3l.png" height="140"/></div>
-<br>
+
 <div align="center">
     <img src="https://img.shields.io/github/license/b-sigpro/m3l.svg" />
-    <img src="https://img.shields.io/badge/Python-3.10-blue" />
+    <img src="https://img.shields.io/badge/Python-3.10%2B-blue" />
+    <a href="https://pixi.sh/">
+        <img src="https://img.shields.io/badge/Pixi-managed-yellow" alt="Pixi" />
+    </a>
 </div>
 
 # M3L: Multi-Modal Machine Listening Toolkit
 
+M3L is a research toolkit for multi-modal machine listening, including audio representation learning, sound event detection, and reproducible experiment recipes.
+
+## Key features
+
+- **Reproducible recipes** – End-to-end pipelines document every stage (data prep, training, inference, evaluation) for reproducible studies.
+- **HPC ready** – Recipes and Makefiles are tuned for ABCI, TSUBAME, and other clusters, yet remain runnable on a single workstation.
+- **Highly modular** – Lightning tasks, common datasets, models, and utilities are built to swap components and run ablations with minimal friction.
+
 ## Getting started
+
+For inference or use as a Python dependency, install M3L from GitHub:
+
 ```bash
 pip install git+https://github.com/b-sigpro/m3l
 ```
 
+For development, use [Pixi](https://pixi.sh/) to manage the project environment.
+
+```bash
+git clone git@github.com:b-sigpro/m3l.internal.git
+cd m3l.internal
+pixi install
+pixi run pre-commit install
+```
+
+> [!NOTE]
+> The Pixi workspace currently supports Linux (`linux-64`), with a GPU-oriented default environment and a CPU environment for CI.
+
+## Recipes
+
+Example experiment recipes are available under `recipes/`:
+
+- **[DESED](recipes/desed/)** – Sound event detection using the DESED dataset.
+- **[Urban-SED](recipes/urban-sed/)** – Sound event detection using synthetic urban soundscapes.
+- **[AudioSet](recipes/audioset/)** – Audio tagging, sound event detection, and audio-visual learning.
+
+Dataset preparation and experiment execution require the corresponding datasets and recipe-specific configuration.
+
+> [!NOTE]
+> These recipes are currently under maintenance.
+
+## License
+
+M3L is licensed under the [MIT License](LICENSE), except for the following files and directories, which are subject to their own licenses and copyright notices:
+
+- [`m3l/third/beats/`](m3l/third/beats/) – [BEATs](https://github.com/microsoft/unilm/blob/master/beats/README.md), licensed under its own [MIT License](m3l/third/beats/LICENSE).
+
+Please refer to the linked license files before reusing or redistributing these components.
+
 ## Acknowledgement
-* Part of this software was developed in a project commissioned by the New Energy and Industrial Technology Development Organization (NEDO).
+
+- Part of this software was developed in a project commissioned by the New Energy and Industrial Technology Development Organization (NEDO).

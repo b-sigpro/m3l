@@ -3,12 +3,12 @@
 
 from argparse import ArgumentParser, Namespace
 from collections.abc import Callable
-import os
 from pathlib import Path
 
-from progressbar import progressbar as pbar
-
 import torch
+
+from aiaccel.job.utils import split_tasks
+from rich.progress import track
 
 
 def separate_one(args: Namespace, unk_args: list[str], initialize: Callable, separate: Callable):
@@ -19,16 +19,12 @@ def separate_one(args: Namespace, unk_args: list[str], initialize: Callable, sep
 def separate_batch(args: Namespace, unk_args: list[str], initialize: Callable, separate: Callable):
     args.dst_path.mkdir(parents=True, exist_ok=True)
 
-    src_fname_list = list(args.src_path.glob(f"*{args.src_ext}"))
-    if "TASK_INDEX" in os.environ:
-        start = int(os.environ["TASK_INDEX"]) - 1
-        end = start + int(os.environ["TASK_STEPSIZE"])
-
-        src_fname_list = src_fname_list[start:end]
+    src_filename_list = list(args.src_path.glob(f"*{args.src_ext}"))
+    src_filename_list = split_tasks(src_filename_list)
 
     ctx = initialize(args, unk_args)
 
-    for src_filename in pbar(src_fname_list):
+    for src_filename in track(src_filename_list):
         dst_filename = args.dst_path / src_filename.name
 
         separate(src_filename, dst_filename.with_suffix(args.dst_ext), ctx, args, unk_args)

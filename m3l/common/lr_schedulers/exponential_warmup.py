@@ -32,7 +32,7 @@ class ExponentialWarmupScheduler(LRScheduler):
 
     def step(self):
         x = np.clip(1 - self.count / self.duration, 0, 1)
-        lr = self.max_lr * np.exp(self.exponent * x**2)
+        lr = float(self.max_lr * np.exp(self.exponent * x**2))
 
         self._set_lr(lr)
 

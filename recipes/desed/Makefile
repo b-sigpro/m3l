@@ -9,6 +9,7 @@ tag := dcase_crnn-beats
 
 inference_name := $(tag)_$(shell date +"%Y-%m-%d-%H-%M-%S")
 inference_command := python -m m3l.audio.sed.detect batch $$train_path $$src_path $$dst_path
+wav_scale := 1.0
 
 inference_path = results/$(inference_name)
 
@@ -74,7 +75,7 @@ $(inference_path)/.inference.%.done: | stage3
 	train_path=$(train_path) && \
 	src_path=audio/$* && \
 	dst_path=$(inference_path)/$*/scores && \
-	$(cmd) gpu --n_tasks=$$n_tasks --n_tasks_per_job=512 $(job_ops) $(inference_path)/jobs/inference.$*.log -- \
+	$(cmd) gpu --n_tasks=$$n_tasks $(job_ops) $(inference_path)/jobs/inference.$*.log -- \
 		$(inference_command)
 	touch $@
 
@@ -88,19 +89,11 @@ $(inference_path)/.5_evaluate_sed_scores.%.done: | stage4
 	touch $@
 
 scores:
-	python ./scripts/summarize_scores.py $(inference_path)
+	python ./scripts/summarize_scores.py $(inference_path) --splits validation eval
 
 
 # clean
 clean:
-	-rm -r \
-		./annotation \
-		./audio \
-		./metadata/label_mat \
-		./metadata/durations* \
-		./hdf5/* \
-		./jobs
-
-	-rm .*.done
+	git clean -xdfi
 
 include ../globals.mk

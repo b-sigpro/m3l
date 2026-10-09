@@ -7,12 +7,10 @@ from argparse import ArgumentParser
 import os
 from pathlib import Path
 
-from omegaconf import DictConfig
-
 import numpy as np
 
+from aiaccel.config import prepare_config
 from aiaccel.torch.h5py.hdf5_writer import HDF5Writer
-from aiaccel.utils import load_config, overwrite_omegaconf_dumper, print_config
 import cv2
 
 import soundfile as sf
@@ -44,7 +42,7 @@ class AudioVisualHDF5Writer(HDF5Writer[Path, None]):
         audio = audio.mean(axis=-1)
         if audio.shape[0] < 9.95 * 16000:
             return {}
-        audio = np.r_[audio, np.zeros(max(0, 16000 * 10 - len(audio)))]
+        audio = np.r_[audio, np.zeros(max(0, 16000 * 10 - len(audio)), dtype=np.float32)]
         audio = audio[: 10 * 16000]
 
         if not os.path.exists(mp4_filename):
@@ -60,7 +58,7 @@ class AudioVisualHDF5Writer(HDF5Writer[Path, None]):
 
         # load as byte data
         with open(mp4_filename, "rb") as vf:
-            video = vf.read()
+            video = np.frombuffer(vf.read(), dtype=np.uint8)
 
         return {wav_filename.stem: {"audio": audio, "video": video}}
 
@@ -70,10 +68,10 @@ def main():
     dataset_path = script_path.parent.parent
 
     # load config
-    overwrite_omegaconf_dumper()
-    config: DictConfig = load_config(dataset_path / "config.yaml")  # type: ignore
-    print_config(config)
-
+    config = prepare_config(
+        dataset_path / "config.yaml",
+        print_config=True,
+    )
     fps = config.convert.fps
     image_size = config.convert.image_size
 

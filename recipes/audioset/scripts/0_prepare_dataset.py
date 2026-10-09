@@ -6,9 +6,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from omegaconf import DictConfig
-
-from aiaccel.config import load_config, overwrite_omegaconf_dumper, print_config
+from aiaccel.config import prepare_config
 
 # def prepare_annotations(annotation_path: Path, config: DictConfig):
 #     # train
@@ -71,10 +69,10 @@ def main():
     parser.add_argument("--audio_only", action="store_true")
     args = parser.parse_args()
 
-    overwrite_omegaconf_dumper()
-
-    config: DictConfig = load_config(dataset_path / "config.yaml")  # type: ignore
-    print_config(config)
+    config = prepare_config(
+        dataset_path / "config.yaml",
+        print_config=True,
+    )
 
     audioset_path = Path(config.path.audioset)
 

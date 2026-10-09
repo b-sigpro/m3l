@@ -9,8 +9,6 @@ inference_command := python -m m3l.audio.sed.detect batch $$train_path $$src_pat
 
 inference_path = results/$(inference_name)
 
-include ../globals.mk
-
 # options
 sample_rate := 16000
 label_resolution := 64
@@ -23,71 +21,66 @@ INFERENCE_SPLITS = $(SPLITS)
 PRINT_VARIABLES = cmd job_ops sample_rate label_resolution train_path tag inference_name inference_command
 
 # stage0: prepare dataset
-.stage0.done: | \
-	.prepare_dataset.done
+stage0_dependencies = \
+	.0_prepare_dataset.done \
+	hdf5/
 
-.prepare_dataset.done:
-	python ./scripts/prepare_dataset.py
+.0_prepare_dataset.done:
+	python ./scripts/0_prepare_dataset.py
 	touch $@
-
 
 # stage1: preprocess
-.stage1.done: | \
-	.summarize_durations.done \
-	.dump_ground_truth.done
+stage1_dependencies = \
+	.1_summarize_durations.done \
+	.1_dump_ground_truth.done
 
-.summarize_durations.done: | .stage0.done
-	python ./scripts/summarize_durations.py
+.1_summarize_durations.done: | stage0
+	python ./scripts/1_summarize_durations.py
 	touch $@
 
-.dump_ground_truth.done: | .stage0.done
-	python ./scripts/dump_ground_truth.py
+.1_dump_ground_truth.done: | stage0
+	python ./scripts/1_dump_ground_truth.py
 	touch $@
 
 
 # stage2: make hdf5
-.stage2.done: | \
+stage2_dependencies = \
 	$(TRAIN_SPLITS:%=.make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done)
 
-.make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done: | .stage1.done
+.make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms.%.done: | stage1
 	$(cmd) mpi $(job_ops) --n_procs=40 jobs/make_hdf5_strong.$(sample_rate)hz_$(label_resolution)ms/$*.log -- \
-		python ./scripts/make_hdf5_strong.py $* --sample_rate=$(sample_rate) --label_resolution=$(label_resolution) --parallel
+		python ./scripts/2_make_hdf5_strong.py $* --sample_rate=$(sample_rate) --label_resolution=$(label_resolution) --parallel
 	touch $@
 
 
 # stage4: inference
-$(inference_path)/.stage4.done: | \
+stage4_dependencies = \
 	$(INFERENCE_SPLITS:%=$(inference_path)/.inference.%.done)
 
-$(inference_path)/.inference.%.done: | $(train_path)/.stage3.done
+$(inference_path)/.inference.%.done: | stage3
 	n_tasks=$(shell find audio/$*/ -name "*.wav" | wc -l) && \
 	train_path=$(train_path) && \
 	src_path=audio/$* && \
 	dst_path=$(inference_path)/$*/scores && \
-	$(cmd) gpu --n_tasks=$$n_tasks --n_tasks_per_job=512 $(job_ops) $(inference_path)/jobs/inference.$*.log -- \
+	$(cmd) gpu --n_tasks=$$n_tasks $(job_ops) $(inference_path)/jobs/inference.$*.log -- \
 		$(inference_command)
 	touch $@
 
 # stage5: evaluation
-stage5: status | $(inference_path)/.stage5.done scores
+stage5: | .WAIT scores
 
-$(inference_path)/.stage5.done: | \
+stage5_dependencies = \
 	$(INFERENCE_SPLITS:%=$(inference_path)/.evaluate_sed_scores.%.done)
 
-$(inference_path)/.evaluate_sed_scores.%.done: | $(inference_path)/.stage4.done
-	python ./scripts/evaluate_sed_scores.py $* $(inference_path) --label_resolution=$(label_resolution)
+$(inference_path)/.evaluate_sed_scores.%.done: | stage4
+	python ./scripts/5_evaluate_sed_scores.py $* $(inference_path) --label_resolution=$(label_resolution)
 	touch $@
 
-scores: | $(inference_path)/.stage5.done
-	python ./scripts/summarize_scores.py $(inference_path)
-
+scores:
+	python ./scripts/summarize_scores.py $(inference_path) --splits validate test
 
 # clean
 clean:
-	-rm -r \
-		./annotation \
-		./audio \
-		./metadata \
-		./jobs
+	git clean -xdfi
 
-	-rm .*.done
+include ../globals.mk
