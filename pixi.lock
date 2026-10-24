@@ -8483,6 +8483,7 @@ packages:
   - rich
   - scipy
   - seaborn
+  - sed-scores-eval
   - soundfile
   - timm
   - torch

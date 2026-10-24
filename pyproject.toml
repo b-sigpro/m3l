@@ -25,6 +25,7 @@ dependencies = [
     "rich",
     "scipy",
     "seaborn",
+    "sed_scores_eval",
     "soundfile",
     "timm",
     "torch",
