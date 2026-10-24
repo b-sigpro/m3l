@@ -38,6 +38,7 @@ def to_mono(waveform: np.ndarray) -> np.ndarray:
 
     return waveform
 
+
 def prepare_audio(audio: tuple[int, np.ndarray], sample_rate: int, max_duration: float) -> tuple[torch.Tensor, float]:
     input_sample_rate, waveform = audio
     waveform = to_mono(waveform)

@@ -10,9 +10,9 @@ import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import sed_scores_eval
-import pandas as pd
 
 
 def main():

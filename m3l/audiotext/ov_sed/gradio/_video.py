@@ -187,4 +187,3 @@ def create_video(
         encode_video(config, image_path, audio_path, output_path, duration, cursor_regions)
 
     return str(output_path)
-

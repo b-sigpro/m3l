@@ -17,5 +17,6 @@ repos:
         args:
           - --license-filepath=.license-header.txt
           - --detect-license-in-X-top-lines=16
+          - --allow-past-years
         types_or: [python, makefile]
         exclude: ^m3l/third/
