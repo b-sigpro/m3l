@@ -3,8 +3,12 @@
 <div align="center">
     <img src="https://img.shields.io/github/license/b-sigpro/m3l.svg" />
     <img src="https://img.shields.io/badge/Python-3.10%2B-blue" />
+    <a href="https://m3l-toolkit.readthedocs.io/en/latest/index.html">
     <a href="https://pixi.sh/">
         <img src="https://img.shields.io/badge/Pixi-managed-yellow" alt="Pixi" />
+    </a>
+    <a href="https://m3l-toolkit.readthedocs.io/en/latest/index.html">
+        <img src="https://app.readthedocs.org/projects/m3l-toolkit/badge/?version=latest" />
     </a>
 </div>
 
