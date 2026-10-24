@@ -9,6 +9,18 @@ Utils
     BalancedSampler
     label_loader
 
+Inference helpers
+-----------------
+
+.. currentmodule:: m3l.utils.inference
+
+.. autosummary::
+    :toctree: generated/
+
+    separate_one
+    separate_batch
+    main
+
 .. Optuna Utilities
 .. ----------------
 

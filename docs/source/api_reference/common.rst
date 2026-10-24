@@ -9,11 +9,12 @@ Transformer blocks
 .. autosummary::
     :toctree: generated/
 
-    MultiScaleDeformableAttention
-    MultiScaleDeformableTransformerDecoderLayer
-    MultiScaleDeformableTransformerEncoderLayer
     TransformerDecoderLayer
     TransformerEncoderLayer
+    TupleSequential
+    SingleOutputGRU
+    LinearAct
+    MultiLayerPerceptron
 
 Learning rate schedulers
 ------------------------

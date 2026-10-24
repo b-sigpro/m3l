@@ -15,6 +15,7 @@ gh-actions = { features = ["cpu", "conda-mpi"], solve-group = "gh-actions" }
 [dependencies]
 python = ">=3.10,<3.15"
 openjdk = "*"
+cxx-compiler = "*"
 blas = { version = "*", build = "mkl" }
 setuptools = "<82"
 

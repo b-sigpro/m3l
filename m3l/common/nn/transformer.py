@@ -1,7 +1,4 @@
 # Copyright (C) 2025 National Institute of Advanced Industrial Science and Technology (AIST)
-# SPDX-License-Identifier: MIT
-
-# Copyright (c) 2025, National Institute of Advanced Industrial Science and Technology (AIST)
 # Copyright (c) 2001-2025, PyTorch Contributors
 #
 # SPDX-License-Identifier: MIT AND BSD-3-Clause

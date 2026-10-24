@@ -59,10 +59,13 @@ Dataset preparation and experiment execution require the corresponding datasets 
 
 M3L is licensed under the [MIT License](LICENSE), except for the following files and directories, which are subject to their own licenses and copyright notices:
 
-- [`m3l/third/beats/`](m3l/third/beats/) – [BEATs](https://github.com/microsoft/unilm/blob/master/beats/README.md), licensed under its own [MIT License](m3l/third/beats/LICENSE).
+- [`m3l/common/nn/transformer.py`](m3l/common/nn/transformer.py) – `TransformerEncoderLayer` and `TransformerDecoderLayer` adapted from [PyTorch](https://github.com/pytorch/pytorch), licensed under [MIT AND BSD-3-Clause](LICENSE-PYTORCH).
+- [`m3l/third/beats/`](m3l/third/beats/) – [BEATs](https://github.com/microsoft/unilm/blob/master/beats/README.md), licensed under its own [MIT](LICENSE-BEATS).
 
 Please refer to the linked license files before reusing or redistributing these components.
 
 ## Acknowledgement
 
 - Part of this software was developed in a project commissioned by the New Energy and Industrial Technology Development Organization (NEDO).
+- Part of this software was developed by using ABCI 3.0 provided by AIST and AIST Solutions.
+- Part of this software was developed by using the TSUBAME4.0 supercomputer at Institute of Science Tokyo.

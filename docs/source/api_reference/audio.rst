@@ -126,8 +126,6 @@ Models
     :toctree: generated/
 
     CNN14
-    HTSAT
-    SwinTransformerBlock
     TaggingModel
 
 Tasks
@@ -138,5 +136,14 @@ Tasks
 .. autosummary::
     :toctree: generated/
 
-    infaug_tagging_task.TaggingTask
     tagging_task.TaggingTask
+
+Inference
+---------
+
+The ``m3l.audio.sed.detect`` module provides a command-line interface for
+sound event detection on individual audio files or batches of files.
+
+.. code-block:: bash
+
+    python -m m3l.audio.sed.detect --help

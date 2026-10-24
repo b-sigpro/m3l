@@ -1,30 +1,40 @@
-.. figure:: _static/logo_m3l.png
+.. figure:: ../image/logo_m3l.png
    :height: 140px
    :align: center
 
-M3L documentation
+M3L Documentation
 =================
 
-M3L is a toolkit for multi-modal machine listening.
+M3L is a toolkit for multi-modal machine listening, including audio tagging,
+sound event detection, audio-visual learning, and open-vocabulary audio-text
+sound event detection.
 
 .. grid:: 2
     :gutter: 2
 
-    .. grid-item-card::  Audio models
-       :link: user_guide/config.html
+    .. grid-item-card:: Audio models
+       :link: api_reference/audio
+       :link-type: doc
 
-       OmegaConf-based config management.
+       Datasets, preprocessors, encoders, and tasks for audio tagging and sound event detection.
 
+    .. grid-item-card:: Visual models
+       :link: api_reference/visual
+       :link-type: doc
 
-    .. grid-item-card::  Visual models
-       :link: user_guide/config.html
+       Visual feature extractors, transforms, metrics, and batching utilities.
 
-       HPC-oriented job abstraction.
+    .. grid-item-card:: Audio-visual models
+       :link: api_reference/audiovisual
+       :link-type: doc
 
-    .. grid-item-card::  Audio-visual models
-       :link: user_guide/torch.html
+       Components for audio-visual correspondence learning.
 
-       Training toolkit for HPC clusters.
+    .. grid-item-card:: Audio-text models
+       :link: api_reference/audiotext
+       :link-type: doc
+
+       Open-vocabulary sound event detection using audio and text representations.
 
 
 Acknowledgments
@@ -38,20 +48,10 @@ Acknowledgments
   of Science Tokyo.
 
 
-
-.. toctree::
-    :hidden:
-
-    user_guide/index.rst
-
 .. toctree::
     :hidden:
     :maxdepth: 2
 
-    api_reference/index.rst
-
-.. .. toctree::
-..     :hidden:
-..     :maxdepth: 2
-
-..     contribution_guide/index.rst
+    user_guide/index
+    recipes/index
+    api_reference/index

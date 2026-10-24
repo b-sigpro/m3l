@@ -19,4 +19,4 @@ repos:
           - --detect-license-in-X-top-lines=16
           - --allow-past-years
         types_or: [python, makefile]
-        exclude: ^m3l/third/
+        exclude: ^(m3l/third/|m3l/common/nn/transformer\.py$)

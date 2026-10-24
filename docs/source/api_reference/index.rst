@@ -6,7 +6,7 @@ API Reference
 
     audio
     audiovisual
+    audiotext
     common
     visual
     utils
-    

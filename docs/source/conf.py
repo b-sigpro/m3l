@@ -52,28 +52,47 @@ html_theme = "shibuya"
 html_show_sourcelink = False
 html_show_sphinx = False
 
-html_static_path = ["_static"]
+html_static_path = ["../image"]
 html_theme_options = {
     "accent_color": "cyan",
     "nav_links": [
         {"title": "User Guide", "url": "user_guide/index"},
+        {"title": "Recipes", "url": "recipes/index"},
         {
             "title": "API Reference",
             "url": "api_reference/index",
-            # "children": [
-            #     {
-            #         "title": "OmegaConf Utilities",
-            #         "url": "api_reference/config",
-            #     },
-            #     {
-            #         "title": "PyTorch/Lightning Toolkit",
-            #         "url": "api_reference/torch",
-            #     },
-            #     {
-            #         "title": "Hyperparameter Optimization",
-            #         "url": "api_reference/hpo",
-            #     },
-            # ],
+            "children": [
+                {
+                    "title": "Audio",
+                    "url": "api_reference/audio",
+                    "summary": "m3l.audio",
+                },
+                {
+                    "title": "Audio-Visual",
+                    "url": "api_reference/audiovisual",
+                    "summary": "m3l.audiovisual",
+                },
+                {
+                    "title": "Audio-Text",
+                    "url": "api_reference/audiotext",
+                    "summary": "m3l.audiotext",
+                },
+                {
+                    "title": "Common",
+                    "url": "api_reference/common",
+                    "summary": "m3l.common",
+                },
+                {
+                    "title": "Visual",
+                    "url": "api_reference/visual",
+                    "summary": "m3l.visual",
+                },
+                {
+                    "title": "Utils",
+                    "url": "api_reference/utils",
+                    "summary": "m3l.utils",
+                },
+            ],
         },
         # {"title": "Contribution Guide", "url": "contribution_guide/index"},
     ],
