@@ -29,8 +29,8 @@ pip install git+https://github.com/b-sigpro/m3l
 For development, use [Pixi](https://pixi.sh/) to manage the project environment.
 
 ```bash
-git clone git@github.com:b-sigpro/m3l.internal.git
-cd m3l.internal
+git clone git@github.com:b-sigpro/m3l.git
+cd m3l
 pixi install
 pixi run pre-commit install
 ```
@@ -43,7 +43,7 @@ pixi run pre-commit install
 Example experiment recipes are available under `recipes/`:
 
 - **[DESED](recipes/desed/)** – Sound event detection using the DESED dataset.
-- **[Urban-SED](recipes/urban-sed/)** – Sound event detection using synthetic urban soundscapes.
+- **[URBAN-SED](recipes/urban-sed/)** – Sound event detection using synthetic urban soundscapes.
 - **[AudioSet](recipes/audioset/)** – Audio tagging, sound event detection, and audio-visual learning.
 
 Dataset preparation and experiment execution require the corresponding datasets and recipe-specific configuration.

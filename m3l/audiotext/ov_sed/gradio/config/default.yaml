@@ -1,0 +1,91 @@
+app:
+  title: "OV-SED: Open-Vocabulary Sound Event Detection"
+  description: |-
+    Explore open-vocabulary sound event detection in your own audio.
+
+    Upload or record audio (up to ${audio.max_duration} seconds), enter up to ${audio.max_labels}
+    labels (one per line), and click **Detect**.
+
+audio:
+  max_duration: 20.0
+  max_labels: 20
+
+labels:
+  - Female speech
+  - Male speech
+  - Laughter
+  - Singing voice
+  - Clapping
+  - Door knocking
+  - Footsteps
+  - Telephone
+  - Bell
+  - Water tap
+  - Music
+
+video:
+  width: 1280
+  height: 720
+  dpi: 100
+  fps: 10
+  crf: 28
+  preset: ultrafast
+  cursor_width: 1
+  waveform_color: "#F97316"
+  cursor_color: "#DAD5E6"
+  spectrogram_cmap: viridis
+  activation_color: "#6B7280"
+  axis_color: "#6B7280"
+  frame_color: "#D1D5DB"
+  # Keep each argument separate so paths and filter expressions are passed without a shell.
+  ffmpeg_command:
+    - ffmpeg
+    - "-y"
+    - "-loglevel"
+    - error
+    - "-loop"
+    - "1"
+    - "-framerate"
+    - "{fps}"
+    - "-i"
+    - "{image_path}"
+    - "-i"
+    - "{audio_path}"
+    - "-filter_complex"
+    - "{filter_complex}"
+    - "-map"
+    - "[v]"
+    - "-map"
+    - "1:a:0"
+    - "-af"
+    - apad
+    - "-t"
+    - "{duration}"
+    - "-fps_mode"
+    - cfr
+    - "-c:v"
+    - libx264
+    - "-preset"
+    - "{preset}"
+    - "-crf"
+    - "{crf}"
+    - "-pix_fmt"
+    - yuv420p
+    - "-g"
+    - "{fps}"
+    - "-keyint_min"
+    - "{fps}"
+    - "-sc_threshold"
+    - "0"
+    - "-c:a"
+    - aac
+    - "-b:a"
+    - 96k
+    - "-movflags"
+    - "+faststart"
+    - "-video_track_timescale"
+    - "90000"
+    - "{output_path}"
+
+output:
+  ttl: 3600

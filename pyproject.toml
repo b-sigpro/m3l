@@ -11,25 +11,30 @@ description = "Multimodal Machine Listening Toolkit"
 version = "2026.10.0"
 
 dependencies = [
-    "aiaccel>=2026.6.0",
+    "aiaccel>=2026.10.2",
     "einops",
-    "hydra-core@git+https://github.com/facebookresearch/hydra.git",
+    "hydra-core",
     "kornia",
     "librosa",
     "lightning",
     "matplotlib",
     "numpy",
-    "omegaconf@git+https://github.com/omry/omegaconf.git",
+    "omegaconf>=2.4.0",
     "pyyaml",
     "resampy",
     "rich",
     "scipy",
+    "seaborn",
     "soundfile",
     "timm",
     "torch",
     "torchaudio",
     "torchmetrics",
     "torchvision",
+    "transformers",
+    # "transformers==4.56.1",
+    "rotary-embedding-torch>=0.8.9",
+    "gradio>=6.14.0"
 ]
 
 [project.urls]

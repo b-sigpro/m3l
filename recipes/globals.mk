@@ -10,6 +10,7 @@ STAGES = stage0 stage1 stage2 stage3 stage4 stage5
 
 .PHONY: all clean status scores check-git $(STAGES) $(STAGES:%=skip-%) help
 .NOTPARALLEL: stage3
+.PRECIOUS: %.done
 
 # general rules
 all: $(STAGES)

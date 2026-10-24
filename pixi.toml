@@ -40,6 +40,11 @@ byobu = "*"
 tmux = "<3.6"
 procps-ng = ">=4.0.4,<5"
 
+numpy = ">=2.0"
+scipy = "*"
+numba = "*"
+cython = "*"
+
 ipython = "*"
 jupyter = "*"
 tensorboard = "*"

@@ -12,7 +12,7 @@ from torch.nn import functional as fn
 
 from aiaccel.torch.lightning import OptimizerConfig, OptimizerLightningModule
 import sed_scores_eval
-from torchmetrics.classification.f_beta import MultilabelF1Score
+from torchmetrics.classification.f_beta import BinaryF1Score, MultilabelF1Score
 
 from m3l.audio.common.preprocessors.preprocessor import Preprocessor
 
@@ -68,13 +68,13 @@ class SEDTask(OptimizerLightningModule):
         n_class: int,
         label_names: list[str],
         time_resolution: float,
-        val_duration: float,
-        val_groundtruth: str,
         optimizer_config: OptimizerConfig,
         freezed_model: nn.Module | None = None,
         threshold: float = 0.5,
         alpha: float = 1.0,
         calc_event_metrics: bool = True,
+        val_duration: float | None = None,  # todo: hard coded
+        val_groundtruth: str | None = None,
     ):
         super().__init__(optimizer_config)
 
@@ -92,12 +92,17 @@ class SEDTask(OptimizerLightningModule):
             self.val_duration = val_duration
             self.val_groundtruth = sed_scores_eval.io.read_ground_truth_events(val_groundtruth)
 
-        self.f1_score = MultilabelF1Score(n_class, average="none")
-        self.threshold = threshold
+        if n_class > 1:
+            self.f1_score = MultilabelF1Score(n_class, average="none")
+        else:
+            self.f1_score = BinaryF1Score()
 
+        self.threshold = threshold
         self.alpha = alpha
 
-    def forward(self, wav: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, wav: torch.Tensor, return_context: bool = False
+    ) -> torch.Tensor | tuple[torch.Tensor, dict[str, torch.Tensor]]:
         feats, _ = self.preprocessor(wav)
 
         if self.freezed_model is not None:
@@ -106,6 +111,8 @@ class SEDTask(OptimizerLightningModule):
 
         y_pred = self.postprocessor(y_pred)
 
+        if return_context:
+            return y_pred, feats
         return y_pred
 
     def training_step(

@@ -5,4 +5,8 @@ path:
 
   urban_sed: ${corpus_base_path}/urban-sed/URBAN-SED_v2.0.0/
 
-  audioset: ${corpus_base_path}/audioset.20230408/
+  audioset: ${corpus_base_path}/audioset/
+
+  maestro_real: ${corpus_base_path}/maestro/
+
+  finelap100k: ${corpus_base_path}/finelap-100k/

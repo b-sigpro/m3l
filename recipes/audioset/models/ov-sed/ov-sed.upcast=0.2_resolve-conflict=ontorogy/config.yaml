@@ -1,0 +1,21 @@
+_base_: ../base.yaml
+
+datamodule:
+  train_dataset_fn_dict:
+    strong:
+      gpt_relationships_path: ${metadata_path}/gpt_relationships.csv
+      resolve_ontology_aware_label_conflicts: True
+      resolve_gpt_label_relationship_conflicts: False
+      prob_cast_upper_label: 0.2
+      prob_drop_positive_labels : 0.0
+      n_labels: ${n_labels}
+  train_batch_size_list: [16]
+
+  val_dataset_fn_dict:
+    strong:
+      gpt_relationships_path: ${metadata_path}/gpt_relationships.csv
+      resolve_ontology_aware_label_conflicts: True
+      resolve_gpt_label_relationship_conflicts: False
+      prob_cast_upper_label: 0.2
+      prob_drop_positive_labels : 0.0
+      n_labels: ${n_labels}

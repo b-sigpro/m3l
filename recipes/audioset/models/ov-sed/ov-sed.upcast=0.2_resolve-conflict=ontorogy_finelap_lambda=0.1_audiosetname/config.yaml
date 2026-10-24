@@ -1,0 +1,43 @@
+_base_: ../base.yaml
+
+
+finelap_hdf5_path: ${working_directory}/../../../../finelap-100k/hdf5/finelap.${sample_rate}hz_64ms.train
+datamodule:
+  train_dataset_fn_dict:
+    strong:
+      gpt_relationships_path: ${metadata_path}/gpt_relationships.csv
+      resolve_ontology_aware_label_conflicts: True
+      resolve_gpt_label_relationship_conflicts: False
+      prob_cast_upper_label: 0.2
+      prob_drop_positive_labels : 0.0
+      n_labels: ${n_labels}
+    finelap100k:
+      _partial_: true
+      _target_: m3l.audiotext.ov_sed.datasets.framelabeled_hdf5_dataset.FrameLabeledHDF5Dataset
+      dataset_path: ${finelap_hdf5_path}.hdf5
+      display_name_path: ${metadata_path}/../../finelap-100k/metadata/aligned_mid_to_display_name_audioset.tsv
+      ontology_path: ${metadata_path}/ontology_strong.json
+      gpt_label_path: ${metadata_path}/surface_variants_prompt_results.json
+      grp_list: ${finelap_hdf5_path}.json
+      prob_gpt_labels: 0.0
+      mixup: True
+      gpt_relationships_path: ${metadata_path}/gpt_relationships.csv
+      resolve_ontology_aware_label_conflicts: True
+      resolve_gpt_label_relationship_conflicts: False
+      prob_cast_upper_label: 0.2
+      prob_drop_positive_labels : 0.0
+      n_labels: ${n_labels}
+  train_batch_size_list: [16, 16]
+
+  val_dataset_fn_dict:
+    strong:
+      gpt_relationships_path: ${metadata_path}/gpt_relationships.csv
+      resolve_ontology_aware_label_conflicts: True
+      resolve_gpt_label_relationship_conflicts: False
+      prob_cast_upper_label: 0.2
+      prob_drop_positive_labels : 0.0
+      n_labels: ${n_labels}
+
+task:
+  _target_: m3l.audiotext.ov_sed.tasks.doom_sed_task_finelap.DOOMSEDTask
+  lambda_finelap: 0.1

@@ -27,8 +27,9 @@ def main():
         psds1 = sed_scores["psds1"]
         psds2 = sed_scores["psds2"]
         event_f1 = sed_scores["event_f1"]
+        auroc = sed_scores["auroc"]
 
-        score_str = f"{psds1:.3f}, {psds2:.3f}, {event_f1['macro_average']:.3f}"
+        score_str = f"{psds1:.3f}, {psds2:.3f}, {event_f1['macro_average']:.3f}, {auroc:.3f}"
         score_str_list.append(score_str)
 
     print(", ".join(score_str_list))

@@ -1,0 +1,15 @@
+# Copyright (C) 2026 National Institute of Advanced Industrial Science and Technology (AIST)
+# SPDX-License-Identifier: MIT
+
+try:
+    import spaces
+except ImportError:
+    spaces = None
+
+
+def with_spaces_gpu(fn):
+    """Reserve a ZeroGPU GPU for a Gradio event handler when Spaces is installed."""
+    if spaces is None:
+        return fn
+
+    return spaces.GPU(duration=30)(fn)
