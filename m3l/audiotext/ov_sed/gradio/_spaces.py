@@ -7,9 +7,9 @@ except ImportError:
     spaces = None
 
 
-def with_spaces_gpu(fn):
+def with_spaces_gpu(fn, duration: int = 30):
     """Reserve a ZeroGPU GPU for a Gradio event handler when Spaces is installed."""
     if spaces is None:
         return fn
 
-    return spaces.GPU(duration=30)(fn)
+    return spaces.GPU(duration=duration)(fn)

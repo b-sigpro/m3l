@@ -115,7 +115,6 @@ class OpenVocabularySED:
         waveform, duration = prepare_audio(audio, self.sample_rate, self.config.audio.max_duration)
         return waveform.numpy(), duration, labels
 
-    @with_spaces_gpu
     def predict_callback(
         self, prepared: tuple[np.ndarray, float, list[str]]
     ) -> tuple[np.ndarray, float, list[str], np.ndarray, np.ndarray]:
@@ -147,7 +146,13 @@ class OpenVocabularySED:
             labels,
         )
 
-    def create_demo(self) -> gr.Blocks:
+    def create_demo(self, gpu_duration: int = 30) -> gr.Blocks:
+        @with_spaces_gpu(duration=gpu_duration)
+        def predict_callback(
+            prepared: tuple[np.ndarray, float, list[str]],
+        ) -> tuple[np.ndarray, float, list[str], np.ndarray, np.ndarray]:
+            return self.predict_callback(prepared)
+
         config = self.config
         description = config.app.description
 
@@ -182,7 +187,7 @@ class OpenVocabularySED:
 
             (
                 detect.click(self.prepare_callback, inputs=[audio_state, label_text], outputs=prepared_state)
-                .success(self.predict_callback, inputs=prepared_state, outputs=result_state)
+                .success(predict_callback, inputs=prepared_state, outputs=result_state)
                 .success(self.create_video_callback, inputs=result_state, outputs=output_video)
             )
 
