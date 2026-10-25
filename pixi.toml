@@ -12,12 +12,16 @@ gh-actions = { features = ["cpu", "conda-mpi"], solve-group = "gh-actions" }
 
 [tasks]
 
+[constraints]
+tomlkit = ">=0.12,<0.15"  # for gradio
+
 [dependencies]
 python = ">=3.10,<3.15"
 openjdk = "*"
 cxx-compiler = "*"
 blas = { version = "*", build = "mkl" }
 setuptools = "<82"
+hatch = "*"
 
 # build tools
 make = ">=4.4"
@@ -55,7 +59,7 @@ pandas = "*"
 markdown-it-py = ">=3.0,<4.0"
 
 [pypi-dependencies]
-m3l = { path = ".", editable = true }
+m3l-toolkit = { path = ".", editable = true }
 
 sed_scores_eval = { git = "https://github.com/fgnt/sed_scores_eval.git", rev = "c7a3b71" }
 
