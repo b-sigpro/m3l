@@ -18,7 +18,7 @@ For training experiments or developing M3L:
 2. Clone the repository:
 
    ```bash
-   git clone git@github.com:b-sigpro/m3l.git
+   git clone m3l-toolkit
    cd m3l
    ```
 

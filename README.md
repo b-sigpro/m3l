@@ -27,7 +27,7 @@ M3L is a research toolkit for multi-modal machine listening, including audio rep
 For inference or use as a Python dependency, install M3L from GitHub:
 
 ```bash
-pip install git+https://github.com/b-sigpro/m3l
+pip install m3l-toolkit
 ```
 
 For development, use [Pixi](https://pixi.sh/) to manage the project environment.
