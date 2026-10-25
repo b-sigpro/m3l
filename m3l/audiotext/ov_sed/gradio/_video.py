@@ -156,10 +156,11 @@ def encode_video(
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
     except FileNotFoundError as error:
+        output_path.unlink(missing_ok=True)
         raise gr.Error("ffmpeg is not installed.") from error
     except subprocess.CalledProcessError as error:
-        message = error.stderr.strip() or "Unknown ffmpeg error."
-        raise gr.Error(f"Video encoding failed: {message}") from error
+        output_path.unlink(missing_ok=True)
+        raise gr.Error("Video encoding failed.") from error
 
 
 def create_video(

@@ -62,6 +62,9 @@ def prepare_audio(audio: tuple[int, np.ndarray], sample_rate: int, max_duration:
 
 
 def parse_labels(text: str, max_labels: int) -> list[str]:
+    if len(text) > 2048:
+        raise gr.Error("Label text is too long.")
+
     labels = [line.strip() for line in text.splitlines() if line.strip()]
 
     if not labels:
@@ -70,7 +73,15 @@ def parse_labels(text: str, max_labels: int) -> list[str]:
     if len(labels) > max_labels:
         raise gr.Error(f"Enter at most {max_labels} labels.")
 
+    if any(len(label) > 128 for label in labels):
+        raise gr.Error("Each label must contain at most 128 characters.")
+
     return labels
+
+
+def cleanup_filename(filename):
+    if filename:
+        Path(filename).unlink(missing_ok=True)
 
 
 class OpenVocabularySED:
@@ -133,9 +144,12 @@ class OpenVocabularySED:
 
         return waveform, duration, labels, logx, scores
 
-    def create_video_callback(self, result: tuple[np.ndarray, float, list[str], np.ndarray, np.ndarray]) -> str:
+    def create_video_callback(
+        self,
+        result: tuple[np.ndarray, float, list[str], np.ndarray, np.ndarray],
+    ) -> tuple[str, str]:
         waveform, duration, labels, logx, scores = result
-        return create_video(
+        mp4_filename = create_video(
             self.config,
             self.output_files,
             waveform,
@@ -146,7 +160,9 @@ class OpenVocabularySED:
             labels,
         )
 
-    def create_demo(self, gpu_duration: int = 30) -> gr.Blocks:
+        return mp4_filename, mp4_filename
+
+    def create_demo(self, gpu_duration: int = 30, delete_cache: tuple[int, int] = (3600, 3600)) -> gr.Blocks:
         @with_spaces_gpu(duration=gpu_duration)
         def predict_callback(
             prepared: tuple[np.ndarray, float, list[str]],
@@ -156,23 +172,17 @@ class OpenVocabularySED:
         config = self.config
         description = config.app.description
 
-        with gr.Blocks(title=config.app.title, delete_cache=(3600, 3600)) as demo:
-            audio_state = gr.State(None)
+        with gr.Blocks(title=config.app.title, delete_cache=delete_cache) as demo:
+            # audio_state = gr.State(None)
             prepared_state = gr.State(None)
             result_state = gr.State(None)
+            temp_filename_state = gr.State()
 
             gr.Markdown(f"# {config.app.title}\n\n{description}")
 
             with gr.Row():
                 with gr.Column(scale=1, min_width=280):
                     input_audio = gr.Audio(label="Input audio", sources=["upload", "microphone"], type="numpy")
-                    gr.on(
-                        triggers=[input_audio.upload, input_audio.stop_recording],
-                        fn=lambda audio: audio,
-                        inputs=input_audio,
-                        outputs=audio_state,
-                        queue=False,
-                    )
 
                     label_text = gr.Textbox(
                         label="Target labels",
@@ -186,9 +196,27 @@ class OpenVocabularySED:
                     output_video = gr.Video(label="Detection result", format="mp4", interactive=False)
 
             (
-                detect.click(self.prepare_callback, inputs=[audio_state, label_text], outputs=prepared_state)
-                .success(predict_callback, inputs=prepared_state, outputs=result_state)
-                .success(self.create_video_callback, inputs=result_state, outputs=output_video)
+                detect.click(
+                    self.prepare_callback,
+                    inputs=[input_audio, label_text],
+                    outputs=prepared_state,
+                )
+                .success(
+                    predict_callback,
+                    inputs=prepared_state,
+                    outputs=result_state,
+                )
+                .success(
+                    self.create_video_callback,
+                    inputs=result_state,
+                    outputs=[output_video, temp_filename_state],
+                )
+                .success(
+                    cleanup_filename,
+                    inputs=temp_filename_state,
+                    outputs=None,
+                    queue=False,
+                )
             )
 
         return demo
@@ -210,4 +238,4 @@ if __name__ == "__main__":
         strict=args.disable_strict,
         weights_only=args.disable_weights_only,
     )
-    app.create_demo().queue(default_concurrency_limit=1).launch(show_error=True)
+    app.create_demo().queue(default_concurrency_limit=1).launch(show_error=True, max_file_size="20mb")
