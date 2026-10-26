@@ -23,7 +23,7 @@ import librosa
 
 @attrs.define(slots=False, field_transformer=reorder_fields)
 class DetectPipeline(BasePipeline):
-    model_path: Path
+    model_path: str
     label_names_filename: Path
 
     label_override_filename: Path = None
@@ -32,6 +32,9 @@ class DetectPipeline(BasePipeline):
     device: str = "cuda"
 
     overwrite_config: dict[str, Any] | None = None
+
+    disable_strict: bool = False
+    disable_weights_only: bool = False
 
     src_ext: str = "wav"
     dst_ext: str = "pkl"
@@ -42,6 +45,8 @@ class DetectPipeline(BasePipeline):
             "merged_config.yaml",
             device=self.device,
             overwrite_config=self.overwrite_config,
+            strict=not self.disable_strict,
+            weights_only=not self.disable_weights_only,
         )
         self.model.eval()
 
