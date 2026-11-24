@@ -64,19 +64,19 @@ class WeakEMASEDTask(SEDTask):
         calc_event_metrics: bool = True,
     ):
         super().__init__(
-            preprocessor,
-            model,
-            postprocessor,
-            n_class,
-            label_names,
-            time_resolution,
-            val_duration,
-            val_groundtruth,
-            optimizer_config,
-            freezed_model,
-            threshold,
-            alpha,
-            calc_event_metrics,
+            preprocessor=preprocessor,
+            model=model,
+            postprocessor=postprocessor,
+            n_class=n_class,
+            label_names=label_names,
+            time_resolution=time_resolution,
+            optimizer_config=optimizer_config,
+            freezed_model=freezed_model,
+            threshold=threshold,
+            alpha=alpha,
+            calc_event_metrics=calc_event_metrics,
+            val_duration=val_duration,
+            val_groundtruth=val_groundtruth,
         )
 
         self.ema_model = AveragedModel(self.model, multi_avg_fn=get_ema_multi_avg_fn(0.999), use_buffers=True)
