@@ -141,9 +141,9 @@ Tasks
 Inference
 ---------
 
-The ``m3l.audio.sed.detect`` module provides a command-line interface for
+The ``m3l.audio.sed.pipelines.detect`` module provides a command-line interface for
 sound event detection on individual audio files or batches of files.
 
 .. code-block:: bash
 
-    python -m m3l.audio.sed.detect --help
+    python -m m3l.audio.sed.pipelines.detect --help

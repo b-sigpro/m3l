@@ -18,7 +18,7 @@ from m3l.audiotext.ov_sed.gradio._video import create_video, render_plot
 
 @pytest.fixture
 def demo_config():
-    config_path = Path(__file__).resolve().parents[1] / "m3l/audiotext/ov_sed/gradio/config/default.yaml"
+    config_path = Path(__file__).resolve().parents[4] / "m3l/audiotext/ov_sed/gradio/config/default.yaml"
     config = OmegaConf.load(config_path)
     config.video.width = 640
     config.video.height = 360
@@ -58,7 +58,7 @@ def test_spaces_gpu_wrapper(monkeypatch):
         return 123
 
     monkeypatch.setattr(_spaces, "spaces", None)
-    assert _spaces.with_spaces_gpu(identity) is identity
+    assert _spaces.with_spaces_gpu()(identity) is identity
 
     called = []
 
@@ -67,5 +67,7 @@ def test_spaces_gpu_wrapper(monkeypatch):
         return lambda fn: lambda: fn() + 1
 
     monkeypatch.setattr(_spaces, "spaces", SimpleNamespace(GPU=gpu))
-    assert _spaces.with_spaces_gpu(identity)() == 124
+    assert _spaces.with_spaces_gpu()(identity)() == 124
     assert called == [30]
+    assert _spaces.with_spaces_gpu(duration=60)(identity)() == 124
+    assert called == [30, 60]

@@ -1,0 +1,25 @@
+name: Test
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: prefix-dev/setup-pixi@v0.9.6
+        with:
+          environments: gh-actions
+      - name: Install pytest
+        run: pixi run -e gh-actions uv pip install --python .pixi/envs/gh-actions/bin/python pytest
+      - name: Run tests
+        run: pixi run -e gh-actions python -m pytest tests -v

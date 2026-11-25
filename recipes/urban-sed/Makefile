@@ -5,7 +5,7 @@ train_path := models/sed/dcase_crnn/
 tag := dcase_crnn
 
 inference_name := $(tag)_$(shell date +"%Y-%m-%d-%H-%M-%S")
-inference_command := python -m m3l.audio.sed.detect batch $$train_path $$src_path $$dst_path
+inference_command := python -m m3l.audio.sed.pipelines.detect batch $$train_path $$src_path $$dst_path
 
 inference_path = results/$(inference_name)
 

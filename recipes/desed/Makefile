@@ -8,7 +8,7 @@ train_path := models/sed/dcase_crnn-beats.weak_ema/
 tag := dcase_crnn-beats
 
 inference_name := $(tag)_$(shell date +"%Y-%m-%d-%H-%M-%S")
-inference_command := python -m m3l.audio.sed.detect batch $$train_path $$src_path $$dst_path
+inference_command := python -m m3l.audio.sed.pipelines.detect batch $$train_path $$src_path $$dst_path
 wav_scale := 1.0
 
 inference_path = results/$(inference_name)
